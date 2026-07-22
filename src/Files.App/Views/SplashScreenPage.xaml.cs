@@ -18,7 +18,7 @@ namespace Files.App.Views
 			"Assets",
 			"AppTiles",
 			"Dev",
-			"SplashScreen.scale-200.png")));
+			"SplashScreen.scale-100.png")));
 
 		private string BranchLabel =>
 			AppLifecycleHelper.AppEnvironment switch
