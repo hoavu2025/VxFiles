@@ -232,6 +232,15 @@
 						TabIndex="2"
 						Visibility="{x:Bind ViewModel.ShowToolbar, Mode=OneWay}" />
 
+					<!--  Automation Bar  -->
+					<automation:AutomationBar
+						x:Name="AutomationBar"
+						Grid.Row="1"
+						Grid.ColumnSpan="3"
+						Margin="0,0,0,4"
+						TabIndex="3"
+						Visibility="{x:Bind ViewModel.ShowToolbar, Mode=OneWay}" />
+
 					<InfoBar
 						x:Name="NetworkDiscoveryInfoBar"
 						Grid.Row="1"
@@ -290,18 +299,11 @@
 						Loaded="PreviewPane_Loaded"
 						Unloaded="PreviewPane_Unloaded" />
 
-					<!--  Status Bar  -->
-					<automation:AutomationBar
-						x:Name="AutomationBar"
-						Grid.Row="5"
-						Grid.ColumnSpan="3"
-						Margin="0,4,0,0"
-						TabIndex="3" />
 
 					<!--  Status Bar  -->
 					<uc:StatusBar
 						x:Name="StatusBar"
-						Grid.Row="6"
+						Grid.Row="5"
 						Grid.ColumnSpan="3"
 						x:Load="False"
 						ShowInfoText="{x:Bind ViewModel.ShowStatusBar, Mode=OneWay}"
@@ -311,7 +313,7 @@
 					<uc:ShelfPane
 						x:Name="ShelfPane"
 						Grid.Row="0"
-						Grid.RowSpan="7"
+						Grid.RowSpan="6"
 						Grid.Column="3"
 						Margin="4,0,0,8"
 						x:Load="{x:Bind ViewModel.ShowShelfPane, Mode=OneWay}"
