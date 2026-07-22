@@ -12,7 +12,7 @@ Use the incremental Debug build while changing C# or XAML:
 .\scripts\Build-Debug.ps1 -Run
 ```
 
-Close VxFiles before rebuilding. Subsequent builds reuse existing outputs; add `-NoRestore` for the shortest loop after dependencies are already restored.
+Close VxFiles before rebuilding. Subsequent builds reuse existing outputs; add `-NoRestore` for the shortest loop after dependencies are already restored. Add `-FrameworkDependent` to skip bundling runtime libraries when local .NET and Windows App SDK runtimes are installed.
 
 `Build-Portable.ps1 -Configuration Debug` also works, but it still publishes, stages, compresses, and hashes the portable archive, so use it only when you need a Debug ZIP.
 

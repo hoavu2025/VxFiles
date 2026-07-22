@@ -5,7 +5,9 @@
 param(
     [switch]$Run,
 
-    [switch]$NoRestore
+    [switch]$NoRestore,
+
+    [switch]$FrameworkDependent
 )
 
 $ErrorActionPreference = 'Stop'
@@ -40,6 +42,13 @@ $msbuildArguments = @(
     '-v:quiet',
     '-clp:ErrorsOnly'
 )
+
+if ($FrameworkDependent) {
+    $msbuildArguments += @(
+        '-p:SelfContained=false',
+        '-p:WindowsAppSDKSelfContained=false'
+    )
+}
 
 if (-not $NoRestore) {
     $msbuildArguments = @('-restore') + $msbuildArguments
