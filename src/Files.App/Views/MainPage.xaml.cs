@@ -465,6 +465,12 @@ namespace Files.App.Views
 
 		private void RootGrid_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
 		{
+			if (e.Key is VirtualKey.F6 && AutomationBar.Visibility is Visibility.Visible && AutomationBar.FocusFirstAction())
+			{
+				e.Handled = true;
+				return;
+			}
+
 			switch (e.Key)
 			{
 				case VirtualKey.Menu:

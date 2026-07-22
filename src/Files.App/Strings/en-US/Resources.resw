@@ -4596,4 +4596,16 @@
   <data name="ConfirmRemoveTagsDialogContent" xml:space="preserve">
     <value>Are you sure you want to remove tags from the selected items?</value>
   </data>
+  <data name="AutomationBar" xml:space="preserve">
+    <value>Automation Bar</value>
+  </data>
+  <data name="AutomationTrustTitle" xml:space="preserve">
+    <value>Run this Automation Action?</value>
+  </data>
+  <data name="AutomationTrustDescription" xml:space="preserve">
+    <value>{0} will receive {1} selected item(s). Review scripts in: {2}</value>
+  </data>
+  <data name="AutomationTrustRun" xml:space="preserve">
+    <value>Trust and run</value>
+  </data>
 </root>

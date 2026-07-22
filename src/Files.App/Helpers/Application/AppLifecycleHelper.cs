@@ -1,4 +1,4 @@
-﻿// Copyright (c) Files Community
+// Copyright (c) Files Community
 // Licensed under the MIT License.
 
 using Files.App.Helpers.Application;
@@ -184,6 +184,10 @@ namespace Files.App.Helpers
 					// Contexts
 					.AddSingleton<IMultiPanesContext, MultiPanesContext>()
 					.AddSingleton<IContentPageContext, ContentPageContext>()
+					.AddSingleton<Files.App.Helpers.Automation.FilesAutomationHostContext>()
+					.AddSingleton<global::VxFiles.Automation.IAutomationHostContext>(sp => sp.GetRequiredService<Files.App.Helpers.Automation.FilesAutomationHostContext>())
+					.AddSingleton<global::VxFiles.Automation.AutomationHostBridge>()
+					.AddSingleton<Files.App.Helpers.Automation.FilesAutomationTrustConsent>()
 					.AddSingleton<IDisplayPageContext, DisplayPageContext>()
 					.AddSingleton<IHomePageContext, HomePageContext>()
 					.AddSingleton<IWindowContext, WindowContext>()
@@ -227,6 +231,7 @@ namespace Files.App.Helpers
 					.AddSingleton<IWindowsCompatibilityService, WindowsCompatibilityService>()
 					// ViewModels
 					.AddSingleton<MainPageViewModel>()
+					.AddSingleton<AutomationBarViewModel>()
 					.AddSingleton<InfoPaneViewModel>()
 					.AddSingleton<SidebarViewModel>()
 					.AddSingleton<DrivesViewModel>()

@@ -1,0 +1,8 @@
+{
+  "version": "3.14.6",
+  "architecture": "x64",
+  "artifact": "python-3.14.6-embed-amd64.zip",
+  "uri": "https://www.python.org/ftp/python/3.14.6/python-3.14.6-embed-amd64.zip",
+  "sha256": "df901e84a896ff1ee720ad03377e0c8d8c2244fda79808aeeaff6316df1cb75c",
+  "executableSha256": "03168c01b7b7491423350e82c26fee71f35b43694d1319d3c668bda6903a0c38"
+}

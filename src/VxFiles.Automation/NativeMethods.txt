@@ -1,0 +1,9 @@
+// Copyright (c) Files Community
+// Licensed under the MIT License.
+
+CreateJobObject
+SetInformationJobObject
+AssignProcessToJobObject
+JOBOBJECT_EXTENDED_LIMIT_INFORMATION
+JOB_OBJECT_LIMIT
+JOBOBJECTINFOCLASS

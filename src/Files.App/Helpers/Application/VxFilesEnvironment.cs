@@ -17,7 +17,7 @@ namespace Files.App.Helpers.Application
 		public const string UpstreamDisplayName = "Files 4.2";
 		public const bool SupportsPackageIdentity = false;
 		public const bool SupportsWindowsIntegration = false;
-		public static Version Version { get; } = new(0, 1, 0, 0);
+		public static Version Version { get; } = new(1, 0, 0, 0);
 		public static string InstallPath { get; } = AppContext.BaseDirectory;
 		public static string LocalDataPath { get; } = Path.Combine(
 			Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),

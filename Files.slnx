@@ -23,6 +23,21 @@
     </Project>
   </Folder>
   <Folder Name="/src/platforms/">
+    <Project Path="src/Files.App.Runtime/Files.App.Runtime.csproj">
+      <Platform Solution="*|arm64" Project="arm64" />
+      <Platform Solution="*|x64" Project="x64" />
+      <Platform Solution="*|x86" Project="x86" />
+    </Project>
+    <Project Path="src/VxFiles.Automation.Abstractions/VxFiles.Automation.Abstractions.csproj">
+      <Platform Solution="*|arm64" Project="arm64" />
+      <Platform Solution="*|x64" Project="x64" />
+      <Platform Solution="*|x86" Project="x86" />
+    </Project>
+    <Project Path="src/VxFiles.Automation/VxFiles.Automation.csproj">
+      <Platform Solution="*|arm64" Project="arm64" />
+      <Platform Solution="*|x64" Project="x64" />
+      <Platform Solution="*|x86" Project="x86" />
+    </Project>
     <Project Path="src/Files.App.BackgroundTasks/Files.App.BackgroundTasks.csproj">
       <Platform Solution="*|arm64" Project="arm64" />
       <Platform Solution="*|x64" Project="x64" />
@@ -72,6 +87,16 @@
     </Project>
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Files.App.Runtime.Tests/Files.App.Runtime.Tests.csproj">
+      <Platform Solution="*|arm64" Project="arm64" />
+      <Platform Solution="*|x64" Project="x64" />
+      <Platform Solution="*|x86" Project="x86" />
+    </Project>
+    <Project Path="tests/VxFiles.Automation.Tests/VxFiles.Automation.Tests.csproj">
+      <Platform Solution="*|arm64" Project="arm64" />
+      <Platform Solution="*|x64" Project="x64" />
+      <Platform Solution="*|x86" Project="x86" />
+    </Project>
     <Project Path="tests/Files.App.UITests/Files.App.UITests.csproj">
       <Platform Solution="*|arm64" Project="arm64" />
       <Platform Solution="*|x64" Project="x64" />
@@ -85,3 +110,4 @@
     </Project>
   </Folder>
 </Solution>
+

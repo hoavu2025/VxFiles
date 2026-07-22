@@ -1,0 +1,81 @@
+<!--  Copyright (c) Files Community. Licensed under the MIT License.  -->
+<UserControl
+	x:Class="Files.App.UserControls.Automation.AutomationBar"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:viewmodels="using:Files.App.ViewModels.UserControls"
+	AutomationProperties.AutomationId="AutomationBar"
+	AutomationProperties.Name="{x:Bind AutomationName, Mode=OneWay}"
+	DataContext="{x:Bind ViewModel, Mode=OneWay}"
+	IsTabStop="False"
+	Loaded="AutomationBar_Loaded"
+	Visibility="{x:Bind ViewModel.Visibility, Mode=OneWay}"
+	mc:Ignorable="d">
+
+	<Border
+		MinHeight="44"
+		Padding="8,4"
+		Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+		BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+		BorderThickness="1"
+		CornerRadius="8">
+		<Grid ColumnSpacing="8">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="Auto" />
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="Auto" />
+			</Grid.ColumnDefinitions>
+
+			<FontIcon
+				VerticalAlignment="Center"
+				FontFamily="{ThemeResource SymbolThemeFontFamily}"
+				Glyph="&#xE943;" />
+
+			<ScrollViewer
+				x:Name="ActionScroller"
+				Grid.Column="1"
+				HorizontalScrollBarVisibility="Hidden"
+				HorizontalScrollMode="Enabled"
+				VerticalScrollMode="Disabled">
+				<ItemsControl ItemsSource="{x:Bind ViewModel.Actions, Mode=OneWay}">
+					<ItemsControl.ItemsPanel>
+						<ItemsPanelTemplate>
+							<StackPanel Orientation="Horizontal" Spacing="4" />
+						</ItemsPanelTemplate>
+					</ItemsControl.ItemsPanel>
+					<ItemsControl.ItemTemplate>
+						<DataTemplate x:DataType="viewmodels:AutomationActionButtonViewModel">
+							<Button
+								AutomationProperties.AutomationId="{x:Bind AutomationId}"
+								AutomationProperties.Name="{x:Bind DisplayName}"
+								Command="{x:Bind InvokeCommand}"
+								Content="{x:Bind DisplayName}"
+								IsEnabled="{x:Bind IsEnabled, Mode=OneWay}"
+								ToolTipService.ToolTip="{x:Bind Description}" />
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+			</ScrollViewer>
+
+			<StackPanel
+				Grid.Column="2"
+				VerticalAlignment="Center"
+				Orientation="Horizontal"
+				Spacing="8"
+				Visibility="{x:Bind ViewModel.RunStatusVisibility, Mode=OneWay}">
+				<ProgressRing Width="16" Height="16" IsActive="{x:Bind ViewModel.IsRunning, Mode=OneWay}" />
+				<TextBlock
+					MaxWidth="240"
+					VerticalAlignment="Center"
+					Text="{x:Bind ViewModel.RunStatus, Mode=OneWay}"
+					TextTrimming="CharacterEllipsis" />
+				<Button
+					AutomationProperties.AutomationId="AutomationCancel"
+					Command="{x:Bind ViewModel.CancelCommand}"
+					Content="{x:Bind CancelLabel, Mode=OneWay}" />
+			</StackPanel>
+		</Grid>
+	</Border>
+</UserControl>

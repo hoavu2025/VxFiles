@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "vxfiles.selection-list",
+  "packageVersion": "1.0.0",
+  "minimumHostVersion": "1.0.0",
+  "displayName": "Write selection list",
+  "description": "Writes the selected paths to vxfiles-selection.txt in the current folder.",
+  "entryPoint": "write_selection.py",
+  "python": { "requires": ">=3.14,<3.15" },
+  "input": {
+    "mode": "json-stdin",
+    "selection": {
+      "minItems": 1,
+      "maxItems": 10000,
+      "itemKinds": ["file", "folder"],
+      "extensions": []
+    }
+  },
+  "execution": {
+    "timeoutSeconds": 30,
+    "maxOutputBytes": 1048576,
+    "concurrency": "single"
+  },
+  "output": { "protocol": "ndjson-v1" }
+}
