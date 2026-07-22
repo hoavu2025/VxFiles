@@ -30,7 +30,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Test-PortableS
 	-ExecutablePath .\artifacts\staging\VxFiles-portable-win-x64\VxFiles.exe
 ```
 
-The check passes only when the shell's `SettingsButton` is present in the launched process's accessibility tree.
+The check verifies that the portable icon and splash assets are present, the splash image renders, the shell exposes both `SettingsButton` and a window icon, closing the window terminates the process, and a second launch reaches the real shell.
 
 1. Extract the ZIP into a new folder.
 2. Launch `VxFiles.exe` from a non-elevated account.

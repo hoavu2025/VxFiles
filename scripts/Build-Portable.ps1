@@ -65,9 +65,16 @@ if ($LASTEXITCODE -ne 0) {
     throw "Portable publish failed with exit code $LASTEXITCODE."
 }
 
-$executablePath = Join-Path $publishDirectory 'VxFiles.exe'
-if (-not (Test-Path -LiteralPath $executablePath)) {
-    throw "Portable publish did not produce $executablePath."
+$requiredPublishFiles = @(
+    (Join-Path $publishDirectory 'VxFiles.exe'),
+    (Join-Path $publishDirectory 'Assets\AppTiles\Dev\Logo.ico'),
+    (Join-Path $publishDirectory 'Assets\AppTiles\Dev\SplashScreen.scale-200.png')
+)
+
+foreach ($requiredFile in $requiredPublishFiles) {
+    if (-not (Test-Path -LiteralPath $requiredFile -PathType Leaf)) {
+        throw "Portable publish did not produce $requiredFile."
+    }
 }
 
 Copy-Item -Path (Join-Path $publishDirectory '*') -Destination $stagingDirectory -Recurse -Force

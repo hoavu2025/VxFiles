@@ -21,6 +21,7 @@ namespace Files.App
 		public static SystemTrayIcon? SystemTrayIcon { get; private set; }
 
 		public static TaskCompletionSource? SplashScreenLoadingTCS { get; private set; }
+		internal static bool? SplashScreenImageLoaded { get; private set; }
 		public static string? OutputPath { get; set; }
 
 		private static CommandBarFlyout? _LastOpenedFlyout;
@@ -106,6 +107,8 @@ namespace Files.App
 				FileTagsManager = Ioc.Default.GetRequiredService<FileTagsManager>();
 				LibraryManager = Ioc.Default.GetRequiredService<LibraryManager>();
 				Logger = Ioc.Default.GetRequiredService<ILogger<App>>();
+				if (SplashScreenImageLoaded is bool splashScreenImageLoaded)
+					LogSplashScreenImageResult(splashScreenImageLoaded);
 				AppModel = Ioc.Default.GetRequiredService<AppModel>();
 
 				// Hook events for the window
@@ -155,6 +158,21 @@ namespace Files.App
 
 				await AppLifecycleHelper.InitializeAppComponentsAsync();
 			}
+		}
+
+		internal static void SetSplashScreenImageResult(bool isLoaded)
+		{
+			SplashScreenImageLoaded = isLoaded;
+			LogSplashScreenImageResult(isLoaded);
+		}
+
+		private static void LogSplashScreenImageResult(bool isLoaded)
+		{
+			var message = $"Splash image {(isLoaded ? "loaded" : "failed to load")} for process {Environment.ProcessId}.";
+			if (isLoaded)
+				Logger.LogInformation(message);
+			else
+				Logger.LogError(message);
 		}
 
 		/// <summary>

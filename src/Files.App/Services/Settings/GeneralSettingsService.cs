@@ -343,14 +343,14 @@ namespace Files.App.Services.Settings
 
 		public bool LeaveAppRunning
 		{
-			get => Get(false);
-			set => Set(value);
+			get => false;
+			set { }
 		}
 
 		public bool ShowSystemTrayIcon
 		{
-			get => Get(false);
-			set => Set(value);
+			get => false;
+			set { }
 		}
 
 		public FileNameConflictResolveOptionType ConflictsResolveOption
