@@ -55,7 +55,7 @@ namespace Files.App.Services.Settings
 		{
 			SettingsSerializer = new DefaultSettingsSerializer();
 
-			Initialize(Path.Combine(ApplicationData.Current.LocalFolder.Path, Constants.LocalSettings.SettingsFolderName, Constants.LocalSettings.UserSettingsFileName));
+			Initialize(Path.Combine(VxFilesEnvironment.LocalDataPath, Constants.LocalSettings.SettingsFolderName, Constants.LocalSettings.UserSettingsFileName));
 
 			JsonSettingsSerializer = new DefaultJsonSettingsSerializer();
 			JsonSettingsDatabase = new CachingJsonSettingsDatabase(SettingsSerializer, JsonSettingsSerializer);

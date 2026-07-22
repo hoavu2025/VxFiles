@@ -122,8 +122,7 @@ namespace Files.App.ViewModels.Settings
 			// Save the updated tab list before restarting
 			AppLifecycleHelper.SaveSessionTabs();
 
-			// Launches a new instance of Files
-			await Launcher.LaunchUriAsync(new Uri("files-dev:"));
+			await VxFilesEnvironment.LaunchAsync();
 
 			// Closes the current instance
 			Process.GetCurrentProcess().Kill();
@@ -226,7 +225,7 @@ namespace Files.App.ViewModels.Settings
 					UserSettingsService.GeneralSettingsService.OpenTabInExistingInstance = value;
 
 					// Needed in Program.cs
-					ApplicationData.Current.LocalSettings.Values["OpenTabInExistingInstance"] = value;
+					VxFilesEnvironment.SetState("OpenTabInExistingInstance", value);
 
 					OnPropertyChanged();
 				}

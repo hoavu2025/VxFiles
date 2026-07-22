@@ -24,6 +24,9 @@ namespace Files.App.Actions
 		public ActionCategory Category
 			=> ActionCategory.Start;
 
+		public bool IsExecutable
+			=> VxFilesEnvironment.SupportsWindowsIntegration;
+
 		public UnpinFromStartAction()
 		{
 			context = Ioc.Default.GetRequiredService<IContentPageContext>();
@@ -31,6 +34,9 @@ namespace Files.App.Actions
 
 		public async Task ExecuteAsync(object? parameter = null)
 		{
+			if (!VxFilesEnvironment.SupportsWindowsIntegration)
+				return;
+
 			if (context.SelectedItems.Count > 0)
 			{
 				foreach (ListedItem listedItem in context.ShellPage?.SlimContentPage.SelectedItems)

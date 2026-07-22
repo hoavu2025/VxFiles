@@ -33,7 +33,7 @@
 			FontSize="20"
 			Foreground="{ThemeResource TextFillColorTertiaryBrush}"
 			LineHeight="32">
-			<Run FontWeight="SemiBold" Text="Files" />
+			<Run FontWeight="SemiBold" Text="{x:Bind AppName, Mode=OneTime}" />
 			<Run FontWeight="SemiLight" Text="{x:Bind BranchLabel, Mode=OneTime}" />
 		</TextBlock>
 

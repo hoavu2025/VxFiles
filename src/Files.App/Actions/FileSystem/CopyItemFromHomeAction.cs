@@ -70,7 +70,6 @@ namespace Files.App.Actions
 						storageItem = standardItems.First();
 				}
 
-				dataPackage.Properties.PackageFamilyName = Windows.ApplicationModel.Package.Current.Id.FamilyName;
 				dataPackage.SetStorageItems(new[] { storageItem }, false);
 
 				Clipboard.SetContent(dataPackage);

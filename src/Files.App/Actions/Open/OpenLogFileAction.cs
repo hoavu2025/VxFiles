@@ -28,7 +28,7 @@ namespace Files.App.Actions
 		{
 			try
 			{
-				var debugFile = await ApplicationData.Current.LocalFolder.TryGetItemAsync("debug.log") as StorageFile;
+				var debugFile = await (await VxFilesEnvironment.GetLocalFolderAsync()).TryGetItemAsync("debug.log") as StorageFile;
 
 				if (debugFile != null && !await Launcher.LaunchFileAsync(debugFile))
 				{

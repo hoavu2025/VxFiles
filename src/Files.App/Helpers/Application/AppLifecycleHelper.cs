@@ -3,18 +3,12 @@
 
 using Files.App.Helpers.Application;
 using Files.App.Services.SizeProvider;
-using Files.App.Utils.Logger;
 using Files.App.ViewModels.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Win32;
-using Sentry;
-using Sentry.Protocol;
 using System.IO;
 using System.Text;
-using Windows.ApplicationModel;
-using Windows.Storage;
 using Windows.System;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
@@ -25,8 +19,6 @@ namespace Files.App.Helpers
 	/// </summary>
 	public static class AppLifecycleHelper
 	{
-		private readonly static string AppInformationKey = @$"Software\Files Community\{Package.Current.Id.Name}\v1\AppInformation";
-
 		/// <summary>
 		/// Gets the value that indicates whether the app is updated.
 		/// </summary>
@@ -49,9 +41,8 @@ namespace Files.App.Helpers
 
 		static AppLifecycleHelper()
 		{
-			using var infoKey = Registry.CurrentUser.CreateSubKey(AppInformationKey);
-			var version = infoKey.GetValue("LastLaunchVersion");
-			var launchCount = infoKey.GetValue("TotalLaunchCount");
+			var version = VxFilesEnvironment.GetState<string?>("LastLaunchVersion");
+			var launchCount = VxFilesEnvironment.GetState("TotalLaunchCount", 0L);
 			if (version is null)
 			{
 				IsAppUpdated = true;
@@ -62,32 +53,29 @@ namespace Files.App.Helpers
 				IsAppUpdated = version.ToString() != AppVersion.ToString();
 			}
 
-			TotalLaunchCount = long.TryParse(launchCount?.ToString(), out var v) ? v + 1 : 1;
-			infoKey.SetValue("LastLaunchVersion", AppVersion.ToString());
-			infoKey.SetValue("TotalLaunchCount", TotalLaunchCount);
+			TotalLaunchCount = launchCount + 1;
+			VxFilesEnvironment.SetState("LastLaunchVersion", AppVersion.ToString());
+			VxFilesEnvironment.SetState("TotalLaunchCount", TotalLaunchCount);
 		}
 
 		/// <summary>
 		/// Gets the value that provides application environment or branch name.
 		/// </summary>
-		public static AppEnvironment AppEnvironment =>
-			Enum.TryParse("cd_app_env_placeholder", true, out AppEnvironment appEnvironment)
-				? appEnvironment
-				: AppEnvironment.Dev;
+		public static AppEnvironment AppEnvironment => AppEnvironment.Portable;
 
 
 		/// <summary>
 		/// Gets application package version.
 		/// </summary>
-		public static Version AppVersion { get; } =
-			new(Package.Current.Id.Version.Major, Package.Current.Id.Version.Minor, Package.Current.Id.Version.Build, Package.Current.Id.Version.Revision);
+		public static Version AppVersion { get; } = VxFilesEnvironment.Version;
 
 		/// <summary>
 		/// Gets application icon path.
 		/// </summary>
 		public static string AppIconPath { get; } =
-			SystemIO.Path.Combine(Package.Current.InstalledLocation.Path, AppEnvironment switch
+			SystemIO.Path.Combine(VxFilesEnvironment.InstallPath, AppEnvironment switch
 			{
+				AppEnvironment.Portable => Constants.AssetPaths.DevLogo,
 				AppEnvironment.Dev => Constants.AssetPaths.DevLogo,
 				AppEnvironment.SideloadPreview or AppEnvironment.StorePreview => Constants.AssetPaths.PreviewLogo,
 				_ => Constants.AssetPaths.StableLogo
@@ -101,7 +89,6 @@ namespace Files.App.Helpers
 			var userSettingsService = Ioc.Default.GetRequiredService<IUserSettingsService>();
 			var addItemService = Ioc.Default.GetRequiredService<IAddItemService>();
 			var generalSettingsService = userSettingsService.GeneralSettingsService;
-			var jumpListService = Ioc.Default.GetRequiredService<IWindowsJumpListService>();
 
 			// Start off a list of tasks we need to run before we can continue startup
 			await Task.WhenAll(
@@ -114,9 +101,7 @@ namespace Files.App.Helpers
 				await Task.WhenAll(
 					OptionalTaskAsync(CloudDrivesManager.UpdateDrivesAsync(), generalSettingsService.ShowCloudDrivesSection),
 					App.LibraryManager.UpdateLibrariesAsync(),
-					OptionalTaskAsync(WSLDistroManager.UpdateDrivesAsync(), generalSettingsService.ShowWslSection),
-					OptionalTaskAsync(App.FileTagsManager.UpdateFileTagsAsync(), generalSettingsService.ShowFileTagsSection),
-					jumpListService.InitializeAsync()
+					OptionalTaskAsync(WSLDistroManager.UpdateDrivesAsync(), generalSettingsService.ShowWslSection)
 				);
 
 				//Start the tasks separately to reduce resource contention
@@ -124,14 +109,6 @@ namespace Files.App.Helpers
 					addItemService.InitializeAsync(),
 					ContextMenu.WarmUpQueryContextMenuAsync()
 				);
-			});
-
-			FileTagsHelper.UpdateTagsDb();
-
-			_ = Task.Run(async () =>
-			{
-				// The follwing method invokes UI thread, so we run it in a separate task
-				await CheckAppUpdate();
 			});
 
 			static Task OptionalTaskAsync(Task task, bool condition)
@@ -150,6 +127,9 @@ namespace Files.App.Helpers
 		/// </summary>
 		public static async Task CheckAppUpdate()
 		{
+			if (AppEnvironment is AppEnvironment.Portable)
+				return;
+
 			var updateService = Ioc.Default.GetRequiredService<IUpdateService>();
 
 			await updateService.CheckForReleaseNotesAsync();
@@ -175,38 +155,18 @@ namespace Files.App.Helpers
 		}
 
 		/// <summary>
-		/// Configures Sentry service, such as Analytics and Crash Report.
-		/// </summary>
-		public static void ConfigureSentry()
-		{
-			SentrySdk.Init(options =>
-			{
-				options.Dsn = Constants.AutomatedWorkflowInjectionKeys.SentrySecret;
-				options.AutoSessionTracking = true;
-				var packageVersion = Package.Current.Id.Version;
-				options.Release = $"{packageVersion.Major}.{packageVersion.Minor}.{packageVersion.Build}";
-				options.TracesSampleRate = 0.10;
-				options.ProfilesSampleRate = 0.05;
-				options.Environment = AppEnvironment == AppEnvironment.StorePreview || AppEnvironment == AppEnvironment.SideloadPreview ? "preview" : "production";
-
-				options.DisableWinUiUnhandledExceptionIntegration();
-			});
-		}
-
-		/// <summary>
 		/// Configures DI (dependency injection) container.
 		/// </summary>
 		public static IHost ConfigureHost()
 		{
 			var builder = Host.CreateDefaultBuilder()
-				.UseContentRoot(Package.Current.InstalledLocation.Path)
+				.UseContentRoot(VxFilesEnvironment.InstallPath)
 				.UseEnvironment(AppLifecycleHelper.AppEnvironment.ToString())
 				.ConfigureLogging(builder => builder
 					.ClearProviders()
 					.AddConsole()
 					.AddDebug()
-					.AddProvider(new FileLoggerProvider(Path.Combine(ApplicationData.Current.LocalFolder.Path, "debug.log")))
-					.AddProvider(new SentryLoggerProvider())
+					.AddProvider(new FileLoggerProvider(Path.Combine(VxFilesEnvironment.LocalDataPath, "debug.log")))
 					.SetMinimumLevel(LogLevel.Information))
 				.ConfigureServices(services => services
 					// Settings services
@@ -330,9 +290,6 @@ namespace Files.App.Helpers
 		{
 			try
 			{
-				// IoC may not be configured yet if the exception happened during early startup
-				var generalSettingsService = SafetyExtensions.IgnoreExceptions(Ioc.Default.GetService<IGeneralSettingsService>);
-
 				StringBuilder formattedException = new()
 				{
 					Capacity = 200
@@ -342,18 +299,6 @@ namespace Files.App.Helpers
 
 				if (ex is not null)
 				{
-					ex.Data[Mechanism.HandledKey] = false;
-					ex.Data[Mechanism.MechanismKey] = "Application.UnhandledException";
-
-					SafetyExtensions.IgnoreExceptions(() =>
-					{
-						SentrySdk.CaptureException(ex, scope =>
-						{
-							scope.User.Id = generalSettingsService?.UserId;
-							scope.Level = SentryLevel.Fatal;
-						});
-					});
-
 					formattedException.AppendLine($">>>> HRESULT: {ex.HResult}");
 
 					if (ex.Message is not null)
@@ -418,9 +363,9 @@ namespace Files.App.Helpers
 						userSettingsService.GeneralSettingsService.LastCrashedTabList = lastSessionTabList;
 
 						// Try to re-launch and start over
-						MainWindow.Instance.DispatcherQueue.EnqueueOrInvokeAsync(async () =>
+						MainWindow.Instance.DispatcherQueue.EnqueueOrInvokeAsync(() =>
 						{
-							await Launcher.LaunchUriAsync(new Uri("files-dev:"));
+							Process.Start(new ProcessStartInfo(Environment.ProcessPath!) { UseShellExecute = true });
 						})
 						.Wait(100);
 					}

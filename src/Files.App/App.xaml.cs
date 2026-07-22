@@ -9,7 +9,6 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.AppLifecycle;
 using Windows.Win32;
 using Windows.ApplicationModel;
-using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 
 namespace Files.App
@@ -86,10 +85,6 @@ namespace Files.App
 				var host = AppLifecycleHelper.ConfigureHost();
 				Ioc.Default.ConfigureServices(host.Services);
 
-				// Configure Sentry
-				if (AppLifecycleHelper.AppEnvironment is not AppEnvironment.Dev)
-					AppLifecycleHelper.ConfigureSentry();
-
 				var userSettingsService = Ioc.Default.GetRequiredService<IUserSettingsService>();
 				var isLeaveAppRunning = userSettingsService.GeneralSettingsService.LeaveAppRunning;
 
@@ -125,19 +120,25 @@ namespace Files.App
 					await SplashScreenLoadingTCS!.Task.WithTimeoutAsync(TimeSpan.FromMilliseconds(500));
 					SplashScreenLoadingTCS = null;
 
-					// Create a system tray icon
-					SystemTrayIcon = new SystemTrayIcon();
-					if (userSettingsService.GeneralSettingsService.ShowSystemTrayIcon)
-						SystemTrayIcon.Show();
+					// System tray integration is intentionally unavailable in the portable build.
+					if (VxFilesEnvironment.SupportsWindowsIntegration)
+					{
+						SystemTrayIcon = new SystemTrayIcon();
+						if (userSettingsService.GeneralSettingsService.ShowSystemTrayIcon)
+							SystemTrayIcon.Show();
+					}
 
-					_ = MainWindow.Instance.InitializeApplicationAsync(appActivationArguments.Data);
+					await MainWindow.Instance.InitializeApplicationAsync(appActivationArguments.Data);
 				}
 				else
 				{
-					// Create a system tray icon
-					SystemTrayIcon = new SystemTrayIcon();
-					if (userSettingsService.GeneralSettingsService.ShowSystemTrayIcon)
-						SystemTrayIcon.Show();
+					// System tray integration is intentionally unavailable in the portable build.
+					if (VxFilesEnvironment.SupportsWindowsIntegration)
+					{
+						SystemTrayIcon = new SystemTrayIcon();
+						if (userSettingsService.GeneralSettingsService.ShowSystemTrayIcon)
+							SystemTrayIcon.Show();
+					}
 
 					// Sleep current instance
 					Program.Pool = new(0, 1, $"Files-{AppLifecycleHelper.AppEnvironment}-Instance");
@@ -185,7 +186,7 @@ namespace Files.App
 				args.WindowActivationState != WindowActivationState.PointerActivated)
 				return;
 
-			ApplicationData.Current.LocalSettings.Values["INSTANCE_ACTIVE"] = -Environment.ProcessId;
+			VxFilesEnvironment.SetActiveInstanceProcessId(-Environment.ProcessId);
 		}
 
 		/// <summary>
@@ -236,7 +237,7 @@ namespace Files.App
 			// Continue running the app on the background
 			if (userSettingsService.GeneralSettingsService.LeaveAppRunning &&
 				!AppModel.ForceProcessTermination &&
-				!Process.GetProcessesByName("Files").Any(x => x.Id != Environment.ProcessId))
+				!Process.GetProcessesByName("VxFiles").Any(x => x.Id != Environment.ProcessId))
 			{
 				// Close open content dialogs
 				UIHelpers.CloseAllDialogs();
@@ -293,18 +294,6 @@ namespace Files.App
 
 			// Method can take a long time, make sure the window is hidden
 			await Task.Yield();
-
-			// Try to maintain clipboard data after app close
-			SafetyExtensions.IgnoreExceptions(() =>
-			{
-				var dataPackage = Clipboard.GetContent();
-				if (dataPackage.Properties.PackageFamilyName == Package.Current.Id.FamilyName)
-				{
-					if (dataPackage.Contains(StandardDataFormats.StorageItems))
-						Clipboard.Flush();
-				}
-			},
-			Logger);
 
 			// Destroy cached properties windows
 			FilePropertiesHelpers.DestroyCachedWindows();

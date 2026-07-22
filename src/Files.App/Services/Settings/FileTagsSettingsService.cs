@@ -26,7 +26,7 @@ namespace Files.App.Services.Settings
 		{
 			SettingsSerializer = new DefaultSettingsSerializer();
 
-			Initialize(Path.Combine(ApplicationData.Current.LocalFolder.Path,
+			Initialize(Path.Combine(VxFilesEnvironment.LocalDataPath,
 				Constants.LocalSettings.SettingsFolderName, Constants.LocalSettings.FileTagSettingsFileName));
 
 			JsonSettingsSerializer = new DefaultJsonSettingsSerializer();

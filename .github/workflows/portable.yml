@@ -1,0 +1,42 @@
+# Copyright (c) VxFiles contributors
+# Licensed under the MIT License.
+
+name: VxFiles Portable
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'vxfiles-v*'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-2025-vs2026
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: Build portable archive
+        shell: pwsh
+        run: .\scripts\Build-Portable.ps1
+
+      - name: Upload portable artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: VxFiles-portable-win-x64
+          path: |
+            artifacts/VxFiles-portable-win-x64.zip
+            artifacts/VxFiles-portable-win-x64.zip.sha256
+          if-no-files-found: error

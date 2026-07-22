@@ -205,10 +205,6 @@
 						<ToggleSwitch AutomationProperties.Name="{helpers:ResourceString Name=NetworkLocations}" IsOn="{x:Bind ViewModel.ShowNetworkLocationsWidget, Mode=TwoWay}" />
 					</wctcontrols:SettingsCard>
 
-					<wctcontrols:SettingsCard Header="{helpers:ResourceString Name=FileTags}">
-						<ToggleSwitch AutomationProperties.Name="{helpers:ResourceString Name=FileTags}" IsOn="{x:Bind ViewModel.ShowFileTagsWidget, Mode=TwoWay}" />
-					</wctcontrols:SettingsCard>
-
 					<wctcontrols:SettingsCard Header="{helpers:ResourceString Name=RecentFiles}">
 						<ToggleSwitch AutomationProperties.Name="{helpers:ResourceString Name=RecentFiles}" IsOn="{x:Bind ViewModel.ShowRecentFilesWidget, Mode=TwoWay}" />
 					</wctcontrols:SettingsCard>
@@ -318,15 +314,6 @@
 						<ToggleSwitch AutomationProperties.Name="{helpers:ResourceString Name=ShowOpenTerminal}" IsOn="{x:Bind ViewModel.ShowOpenTerminal, Mode=TwoWay}" />
 					</wctcontrols:SettingsCard>
 
-					<!--  Edit tags  -->
-					<wctcontrols:SettingsCard Header="{helpers:ResourceString Name=ShowEditTagsMenu}">
-						<ToggleSwitch AutomationProperties.Name="{helpers:ResourceString Name=ShowEditTagsMenu}" IsOn="{x:Bind ViewModel.ShowEditTagsMenu, Mode=TwoWay}" />
-					</wctcontrols:SettingsCard>
-
-					<!--  Pin to Start  -->
-					<wctcontrols:SettingsCard Header="{helpers:ResourceString Name=ShowPinToStart}">
-						<ToggleSwitch AutomationProperties.Name="{helpers:ResourceString Name=ShowPinToStart}" IsOn="{x:Bind ViewModel.ShowPinToStart, Mode=TwoWay}" />
-					</wctcontrols:SettingsCard>
 				</wctcontrols:SettingsExpander.Items>
 			</wctcontrols:SettingsExpander>
 

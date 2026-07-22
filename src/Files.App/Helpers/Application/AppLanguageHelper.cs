@@ -11,6 +11,17 @@ namespace Files.App.Helpers
 	/// </summary>
 	public static class AppLanguageHelper
 	{
+		private const string PrimaryLanguageOverrideKey = "PrimaryLanguageOverride";
+
+		private static readonly string[] UnpackagedLanguages =
+		[
+			"af", "ar", "be-BY", "bg", "ca", "cs-CZ", "da", "de-DE", "el", "en-GB", "en-US",
+			"es-419", "es-ES", "fa-IR", "fi-FI", "fil-PH", "fr-FR", "he-IL", "hi-IN", "hr-HR",
+			"hu-HU", "hy-AM", "id-ID", "it-IT", "ja-JP", "ka", "km-KH", "ko-KR", "lt-LT", "lv-LV",
+			"ms-MY", "nb-NO", "nl-NL", "pl-PL", "pt-BR", "pt-PT", "ro-RO", "ru-RU", "sk-SK",
+			"sq-AL", "sr-Cyrl", "sv-SE", "ta", "th-TH", "tr-TR", "uk-UA", "vi", "zh-Hans", "zh-Hant",
+		];
+
 		/// <summary>
 		/// A constant string representing the default language code.
 		/// It is initialized as an empty string.
@@ -48,7 +59,7 @@ namespace Files.App.Helpers
 		static AppLanguageHelper()
 		{
 			// Populate the Languages collection with available languages
-			var appLanguages = ApplicationLanguages.ManifestLanguages
+			var appLanguages = GetSupportedLanguageCodes()
 			   .Append(string.Empty) // Add default language code
 			   .Select(language => new AppLanguageItem(language))
 			   .OrderBy(language => language.Code is not "") // Default language on top
@@ -56,7 +67,7 @@ namespace Files.App.Helpers
 			   .ToList();
 
 			// Get the current primary language override.
-			var current = new AppLanguageItem(ApplicationLanguages.PrimaryLanguageOverride);
+			var current = new AppLanguageItem(GetPrimaryLanguageOverride());
 
 			// Find the index of the saved language
 			var index = appLanguages.IndexOf(appLanguages.FirstOrDefault(dl => dl.Name == current.Name) ?? appLanguages.First());
@@ -86,7 +97,7 @@ namespace Files.App.Helpers
 			PreferredLanguage = SupportedLanguages[index];
 
 			// Update the primary language override
-			ApplicationLanguages.PrimaryLanguageOverride = index == 0 ? _defaultCode : PreferredLanguage.Code;
+			SetPrimaryLanguageOverride(index == 0 ? _defaultCode : PreferredLanguage.Code);
 			return true;
 		}
 
@@ -116,8 +127,26 @@ namespace Files.App.Helpers
 			PreferredLanguage = SupportedLanguages[index];
 
 			// Update the primary language override
-			ApplicationLanguages.PrimaryLanguageOverride = index == 0 ? _defaultCode : PreferredLanguage.Code;
+			SetPrimaryLanguageOverride(index == 0 ? _defaultCode : PreferredLanguage.Code);
 			return true;
+		}
+
+		private static IEnumerable<string> GetSupportedLanguageCodes()
+			=> VxFilesEnvironment.SupportsPackageIdentity
+				? ApplicationLanguages.ManifestLanguages
+				: UnpackagedLanguages;
+
+		private static string GetPrimaryLanguageOverride()
+			=> VxFilesEnvironment.SupportsPackageIdentity
+				? ApplicationLanguages.PrimaryLanguageOverride
+				: VxFilesEnvironment.GetState(PrimaryLanguageOverrideKey, _defaultCode);
+
+		private static void SetPrimaryLanguageOverride(string value)
+		{
+			if (VxFilesEnvironment.SupportsPackageIdentity)
+				ApplicationLanguages.PrimaryLanguageOverride = value;
+			else
+				VxFilesEnvironment.SetState(PrimaryLanguageOverrideKey, value);
 		}
 	}
 }

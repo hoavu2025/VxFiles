@@ -29,13 +29,9 @@ namespace Files.App.Services
 
 		private ILogger? Logger { get; } = Ioc.Default.GetRequiredService<ILogger<App>>();
 
-		private string PackageName { get; } = Package.Current.Id.Name;
+		private string PackageName { get; } = VxFilesEnvironment.DisplayName;
 
-		private Version PackageVersion { get; } = new(
-			Package.Current.Id.Version.Major,
-			Package.Current.Id.Version.Minor,
-			Package.Current.Id.Version.Build,
-			Package.Current.Id.Version.Revision);
+		private Version PackageVersion { get; } = VxFilesEnvironment.Version;
 
 		private bool _isUpdateAvailable;
 		public bool IsUpdateAvailable

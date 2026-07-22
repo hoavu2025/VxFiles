@@ -12,6 +12,11 @@ namespace Files.App.Data.Enums
 	public enum AppEnvironment
 	{
 		/// <summary>
+		/// Application distribution type is the unpackaged VxFiles portable build.
+		/// </summary>
+		Portable,
+
+		/// <summary>
 		/// Application distribution type is Dev.
 		/// </summary>
 		Dev,

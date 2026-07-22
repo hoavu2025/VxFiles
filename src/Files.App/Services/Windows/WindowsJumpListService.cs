@@ -14,6 +14,9 @@ namespace Files.App.Services
 
 		public async Task InitializeAsync()
 		{
+			if (!VxFilesEnvironment.SupportsWindowsIntegration)
+				return;
+
 			try
 			{
 				App.QuickAccessManager.UpdateQuickAccessWidget -= UpdateQuickAccessWidget_Invoked;
@@ -29,6 +32,9 @@ namespace Files.App.Services
 
 		public async Task AddFolderAsync(string path)
 		{
+			if (!VxFilesEnvironment.SupportsWindowsIntegration)
+				return;
+
 			try
 			{
 				if (JumpList.IsSupported())
@@ -54,6 +60,9 @@ namespace Files.App.Services
 
 		public async Task<IEnumerable<string>> GetFoldersAsync()
 		{
+			if (!VxFilesEnvironment.SupportsWindowsIntegration)
+				return [];
+
 			if (JumpList.IsSupported())
 			{
 				try
@@ -77,6 +86,9 @@ namespace Files.App.Services
 
 		public async Task RefreshPinnedFoldersAsync()
 		{
+			if (!VxFilesEnvironment.SupportsWindowsIntegration)
+				return;
+
 			try
 			{
 				if (App.QuickAccessManager.PinnedItemsWatcher is not null)
@@ -109,6 +121,9 @@ namespace Files.App.Services
 
 		public async Task RemoveFolderAsync(string path)
 		{
+			if (!VxFilesEnvironment.SupportsWindowsIntegration)
+				return;
+
 			if (JumpList.IsSupported())
 			{
 				try

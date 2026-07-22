@@ -23,6 +23,7 @@ global using global::CommunityToolkit.Mvvm.Messaging;
 
 // Files.App
 global using global::Files.App.Helpers;
+global using global::Files.App.Helpers.Application;
 global using global::Files.App.Extensions;
 global using global::Files.App.Utils;
 global using global::Files.App.Utils.Cloud;

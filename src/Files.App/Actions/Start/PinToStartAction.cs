@@ -25,7 +25,7 @@ namespace Files.App.Actions
 			=> ActionCategory.Start;
 
 		public bool IsExecutable =>
-			context.ShellPage is not null;
+			VxFilesEnvironment.SupportsWindowsIntegration && context.ShellPage is not null;
 
 		public PinToStartAction()
 		{
@@ -34,6 +34,9 @@ namespace Files.App.Actions
 
 		public async Task ExecuteAsync(object? parameter = null)
 		{
+			if (!VxFilesEnvironment.SupportsWindowsIntegration)
+				return;
+
 			if (context.SelectedItems.Count > 0 && context.ShellPage?.SlimContentPage?.SelectedItems is not null)
 			{
 				foreach (ListedItem listedItem in context.ShellPage.SlimContentPage.SelectedItems)

@@ -11,6 +11,8 @@ namespace Files.App.Views
 	/// </summary>
 	public sealed partial class SplashScreenPage : Page
 	{
+		private string AppName => VxFilesEnvironment.DisplayName;
+
 		private string BranchLabel =>
 			AppLifecycleHelper.AppEnvironment switch
 			{

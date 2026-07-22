@@ -20,7 +20,6 @@ namespace Files.App.ViewModels.Settings
 				(SettingsPageKind.LayoutPage,     Strings.Layout.GetLocalizedResource(),          () => new LayoutPage()),
 				(SettingsPageKind.FoldersPage,    Strings.FilesAndFolders.GetLocalizedResource(), () => new FoldersPage()),
 				(SettingsPageKind.ActionsPage,    Strings.Actions.GetLocalizedResource(),         () => new ActionsPage()),
-				(SettingsPageKind.TagsPage,       Strings.FileTags.GetLocalizedResource(),        () => new TagsPage()),
 				(SettingsPageKind.DevToolsPage,   Strings.DevTools.GetLocalizedResource(),        () => new DevToolsPage()),
 				(SettingsPageKind.AdvancedPage,   Strings.Advanced.GetLocalizedResource(),        () => new AdvancedPage()),
 				(SettingsPageKind.AboutPage,      Strings.About.GetLocalizedResource(),           () => new AboutPage()),
