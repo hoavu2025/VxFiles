@@ -4,6 +4,18 @@ VxFiles is a personalized, portable Windows file manager based on [Files Communi
 
 Milestone 1 provides an unsigned x64 build that runs from an extracted folder without installation or administrator rights. It is self-contained, stores its state under `%LOCALAPPDATA%\VxFiles`, and does not configure shell integration, startup tasks, automatic updates, telemetry, or remote crash reporting.
 
+## Fast Debug iteration
+
+Use the incremental Debug build while changing C# or XAML:
+
+```powershell
+.\scripts\Build-Debug.ps1 -Run
+```
+
+Close VxFiles before rebuilding. Subsequent builds reuse existing outputs; add `-NoRestore` for the shortest loop after dependencies are already restored.
+
+`Build-Portable.ps1 -Configuration Debug` also works, but it still publishes, stages, compresses, and hashes the portable archive, so use it only when you need a Debug ZIP.
+
 ## Build the portable archive
 
 Requirements:
