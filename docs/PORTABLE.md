@@ -8,7 +8,8 @@ VxFiles Portable is an unsigned, self-contained x64 application distributed as a
 - The application does not share settings with an installed Files Community build.
 - The application does not automatically register protocols, file associations, startup tasks, background updates, or shell extensions.
 - Telemetry and remote crash reporting are disabled. Diagnostic logs remain in the VxFiles data directory.
-- File tags are disabled because Files 4.2 stores tag data in the registry.
+- File tags are stored locally in `%LOCALAPPDATA%\VxFiles\filetags.db` using JSON persistence. File tag markers are also attached via NTFS Alternate Data Streams (`:files` ADS) when supported by the filesystem.
+- System tray icon (`ShowSystemTrayIcon`) and background lifetime (`LeaveAppRunning`) are optional, default off for both ZIP and Inno builds, create no persistent Windows registration, and do not enable startup-at-login.
 - Per-folder layout preferences are stored in `%LOCALAPPDATA%\VxFiles\layout-preferences.json`.
 
 ## Trust limitation

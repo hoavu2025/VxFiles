@@ -19,6 +19,7 @@ namespace Files.App.Helpers.Application
 		public const bool SupportsWindowsIntegration = false;
 		public static Version Version { get; } = new(1, 0, 0, 0);
 		public static string InstallPath { get; } = AppContext.BaseDirectory;
+		public const string InstanceSemaphoreName = "VxFiles-Portable-Instance";
 		public static string LocalDataPath { get; } = Path.Combine(
 			Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
 			DisplayName);

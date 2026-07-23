@@ -1,4 +1,4 @@
-﻿<!--  Copyright (c) Files Community. Licensed under the MIT License.  -->
+<!--  Copyright (c) Files Community. Licensed under the MIT License.  -->
 <Page
 	x:Class="Files.App.Views.Settings.AdvancedPage"
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -106,7 +106,6 @@
 			<!--  Leave App Running  -->
 			<wctcontrols:SettingsCard
 				x:Name="LeaveAppRunningSettingsCard"
-				x:Load="{x:Bind ViewModel.SupportsPackageIntegrations}"
 				Header="{helpers:ResourceString Name=SettingsLeaveAppRunning}">
 				<wctcontrols:SettingsCard.HeaderIcon>
 					<FontIcon Glyph="&#xE8E6;" />
@@ -117,7 +116,6 @@
 			<!--  System Tray Icon  -->
 			<wctcontrols:SettingsCard
 				x:Name="SystemTrayIconSettingsCard"
-				x:Load="{x:Bind ViewModel.SupportsPackageIntegrations}"
 				Header="{helpers:ResourceString Name=ShowSystemTrayIcon}">
 				<wctcontrols:SettingsCard.HeaderIcon>
 					<FontIcon Glyph="&#xE75B;" />

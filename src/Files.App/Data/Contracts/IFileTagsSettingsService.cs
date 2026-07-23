@@ -21,7 +21,7 @@ namespace Files.App.Data.Contracts
 
 		void EditTag(string uid, string name, string color);
 
-		void DeleteTag(string uid);
+		bool DeleteTag(string uid);
 
 		object ExportSettings();
 

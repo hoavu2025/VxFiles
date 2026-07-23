@@ -1,6 +1,7 @@
-﻿// Copyright (c) Files Community
+// Copyright (c) Files Community
 // Licensed under the MIT License.
 
+using Files.App.Helpers.Application;
 using Microsoft.Extensions.Logging;
 using System.Drawing;
 using System.Runtime.InteropServices;
@@ -289,7 +290,7 @@ namespace Files.App.Utils.Taskbar
 		{
 			Microsoft.Windows.AppLifecycle.AppInstance.Restart("");
 
-			var pool = new Semaphore(0, 1, $"Files-{AppLifecycleHelper.AppEnvironment}-Instance", out var isNew);
+			var pool = new Semaphore(0, 1, VxFilesEnvironment.InstanceSemaphoreName, out var isNew);
 			if (!isNew)
 				pool.Release();
 
@@ -304,7 +305,7 @@ namespace Files.App.Utils.Taskbar
 
 				App.AppModel.ForceProcessTermination = true;
 
-				var pool = new Semaphore(0, 1, $"VxFiles-{AppLifecycleHelper.AppEnvironment}-Instance", out var isNew);
+				var pool = new Semaphore(0, 1, VxFilesEnvironment.InstanceSemaphoreName, out var isNew);
 				if (!isNew)
 					pool.Release();
 				else

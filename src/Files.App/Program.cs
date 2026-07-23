@@ -46,7 +46,7 @@ namespace Files.App
 			// paths like "." against the terminal's CWD rather than its own. (#16982)
 			VxFilesEnvironment.SetState(LaunchCwdKey, Environment.CurrentDirectory);
 
-			var pool = new Semaphore(0, 1, $"VxFiles-{AppLifecycleHelper.AppEnvironment}-Instance", out var isNew);
+			var pool = new Semaphore(0, 1, VxFilesEnvironment.InstanceSemaphoreName, out var isNew);
 
 			if (!isNew)
 			{

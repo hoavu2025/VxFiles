@@ -1,6 +1,7 @@
 // Copyright (c) Files Community
 // Licensed under the MIT License.
 
+using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation.Metadata;
 using Windows.Storage;
@@ -25,44 +26,104 @@ namespace Files.App.Utils.FileTags
 
 		public static async void WriteFileTag(string filePath, string[] tag)
 		{
+			await WriteFileTagAsync(filePath, tag);
+		}
+
+		public static async void SetFileTags(string filePath, ulong? frn, string[] tags)
+		{
+			await SetFileTagsAsync(filePath, frn, tags);
+		}
+
+		public static async Task<bool> SetFileTagsAsync(string filePath, ulong? frn, string[] tags)
+		{
+			if (TrySetFileTags(filePath, frn, tags))
+				return true;
+
+			await ShowWriteErrorAsync();
+			return false;
+		}
+
+		public static bool TrySetFileTags(string filePath, ulong? frn, string[] tags)
+		{
+			try
+			{
+				var previousTags = ReadFileTag(filePath);
+				if (!TryWriteFileTag(filePath, tags))
+					return false;
+
+				if (GetDbInstance().SetTags(filePath, frn, tags))
+					return true;
+
+				if (!TryWriteFileTag(filePath, previousTags))
+					App.Logger?.LogError("Failed to restore file tags ADS for {FilePath} after a database write failure.", filePath);
+
+				return false;
+			}
+			catch (Exception ex)
+			{
+				App.Logger?.LogError(ex, "Failed to update file tags for {FilePath}.", filePath);
+				return false;
+			}
+		}
+
+		public static async Task<bool> WriteFileTagAsync(string filePath, string[] tag)
+		{
+			if (TryWriteFileTag(filePath, tag))
+				return true;
+
+			await ShowWriteErrorAsync();
+			return false;
+		}
+
+		private static async Task ShowWriteErrorAsync()
+		{
+			await MainWindow.Instance.DispatcherQueue.EnqueueOrInvokeAsync(async () =>
+			{
+				ContentDialog dialog = new()
+				{
+					Title = Strings.ErrorApplyingTagTitle.GetLocalizedResource(),
+					Content = Strings.ErrorApplyingTagContent.GetLocalizedResource(),
+					PrimaryButtonText = "Ok".GetLocalizedResource()
+				};
+
+				if (ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", 8))
+					dialog.XamlRoot = MainWindow.Instance.Content.XamlRoot;
+
+				await dialog.TryShowAsync();
+			});
+		}
+
+		public static bool TryWriteFileTag(string filePath, string[] tag)
+		{
 			var isDateOk = Win32Helper.GetFileDateModified(filePath, out var dateModified); // Backup date modified
 			var isReadOnly = Win32Helper.HasFileAttribute(filePath, IO.FileAttributes.ReadOnly);
-			if (isReadOnly) // Unset read-only attribute (#7534)
+			try
 			{
-				Win32Helper.UnsetFileAttribute(filePath, IO.FileAttributes.ReadOnly);
-			}
-			if (!tag.Any())
-			{
-				PInvoke.DeleteFileFromApp($"{filePath}:files");
-			}
-			else if (ReadFileTag(filePath) is not string[] arr || !tag.SequenceEqual(arr))
-			{
-				var result = Win32Helper.WriteStringToFile($"{filePath}:files", string.Join(',', tag));
-				if (result == false)
+				if (isReadOnly) // Unset read-only attribute (#7534)
 				{
-					await MainWindow.Instance.DispatcherQueue.EnqueueOrInvokeAsync(async () =>
-					{
-						ContentDialog dialog = new()
-						{
-							Title = Strings.ErrorApplyingTagTitle.GetLocalizedResource(),
-							Content = Strings.ErrorApplyingTagContent.GetLocalizedResource(),
-							PrimaryButtonText = "Ok".GetLocalizedResource()
-						};
-
-						if (ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", 8))
-							dialog.XamlRoot = MainWindow.Instance.Content.XamlRoot;
-
-						await dialog.TryShowAsync();
-					});
+					Win32Helper.UnsetFileAttribute(filePath, IO.FileAttributes.ReadOnly);
 				}
+
+				if (!tag.Any())
+					return PInvoke.DeleteFileFromApp($"{filePath}:files") || !IO.File.Exists($"{filePath}:files");
+
+				if (ReadFileTag(filePath) is string[] existingTags && tag.SequenceEqual(existingTags))
+					return true;
+
+				return Win32Helper.WriteStringToFile($"{filePath}:files", string.Join(',', tag));
 			}
-			if (isReadOnly) // Restore read-only attribute (#7534)
+			catch (Exception ex)
 			{
-				Win32Helper.SetFileAttribute(filePath, IO.FileAttributes.ReadOnly);
+				App.Logger?.LogError(ex, "Failed to write file tags ADS for {FilePath}.", filePath);
+				return false;
 			}
-			if (isDateOk)
+			finally
 			{
-				Win32Helper.SetFileDateModified(filePath, dateModified); // Restore date modified
+				if (isReadOnly) // Restore read-only attribute (#7534)
+					Win32Helper.SetFileAttribute(filePath, IO.FileAttributes.ReadOnly);
+
+				if (isDateOk)
+					Win32Helper.SetFileDateModified(filePath, dateModified); // Restore date modified
 			}
 		}
 

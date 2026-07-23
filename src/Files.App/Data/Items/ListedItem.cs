@@ -116,11 +116,7 @@ namespace Files.App.Utils
 
 					// only set the tags if the file tags have been changed
 					if (fileTagsInitialized)
-					{
-						var dbInstance = FileTagsHelper.GetDbInstance();
-						dbInstance.SetTags(ItemPath, FileFRN, value);
-						FileTagsHelper.WriteFileTag(ItemPath, value);
-					}
+						FileTagsHelper.SetFileTags(ItemPath, FileFRN, value);
 
 					HasTags = !FileTags.IsEmpty();
 					OnPropertyChanged(nameof(FileTagsUI));

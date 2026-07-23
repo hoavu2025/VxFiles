@@ -133,8 +133,8 @@ namespace Files.App.Services.Settings
 
 		public bool ShowFileTagsWidget
 		{
-			get => false;
-			set { }
+			get => Get(false);
+			set => Set(value);
 		}
 
 		public bool FoldersWidgetExpanded
@@ -205,8 +205,8 @@ namespace Files.App.Services.Settings
 
 		public bool ShowFileTagsSection
 		{
-			get => false;
-			set { }
+			get => Get(true);
+			set => Set(value);
 		}
 
 		public bool IsPinnedSectionExpanded
@@ -271,8 +271,8 @@ namespace Files.App.Services.Settings
 
 		public bool ShowEditTagsMenu
 		{
-			get => false;
-			set { }
+			get => Get(true);
+			set => Set(value);
 		}
 
 		public bool ShowCompressionOptions
@@ -343,14 +343,14 @@ namespace Files.App.Services.Settings
 
 		public bool LeaveAppRunning
 		{
-			get => false;
-			set { }
+			get => Get(false);
+			set => Set(value);
 		}
 
 		public bool ShowSystemTrayIcon
 		{
-			get => false;
-			set { }
+			get => Get(false);
+			set => Set(value);
 		}
 
 		public FileNameConflictResolveOptionType ConflictsResolveOption

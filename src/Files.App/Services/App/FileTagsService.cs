@@ -1,4 +1,4 @@
-﻿// Copyright (c) Files Community
+// Copyright (c) Files Community
 // Licensed under the MIT License.
 
 using System.Runtime.CompilerServices;
@@ -19,10 +19,10 @@ namespace Files.App.Services
 		}
 
 		/// <inheritdoc/>
-		public Task<bool> SetFileTagAsync(IStorable storable, string[] tagUids, CancellationToken cancellationToken = default)
+		public async Task<bool> SetFileTagAsync(IStorable storable, string[] tagUids, CancellationToken cancellationToken = default)
 		{
-			FileTagsHelper.WriteFileTag(storable.Id, tagUids);
-			return Task.FromResult(true);
+			var frn = FileTagsHelper.GetFileFRN(storable.Id);
+			return await FileTagsHelper.SetFileTagsAsync(storable.Id, frn, tagUids);
 		}
 
 		/// <inheritdoc/>

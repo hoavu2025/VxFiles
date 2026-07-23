@@ -3,6 +3,7 @@
 
 using Files.App.Helpers.Application;
 using Files.App.Services.SizeProvider;
+using Files.App.Utils.FileTags;
 using Files.App.ViewModels.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -92,7 +93,8 @@ namespace Files.App.Helpers
 
 			// Start off a list of tasks we need to run before we can continue startup
 			await Task.WhenAll(
-				App.QuickAccessManager.InitializeAsync()
+				App.QuickAccessManager.InitializeAsync(),
+				OptionalTaskAsync(App.FileTagsManager.UpdateFileTagsAsync(), generalSettingsService.ShowFileTagsSection)
 			);
 
 			// Start non-critical tasks without waiting for them to complete
@@ -101,7 +103,8 @@ namespace Files.App.Helpers
 				await Task.WhenAll(
 					OptionalTaskAsync(CloudDrivesManager.UpdateDrivesAsync(), generalSettingsService.ShowCloudDrivesSection),
 					App.LibraryManager.UpdateLibrariesAsync(),
-					OptionalTaskAsync(WSLDistroManager.UpdateDrivesAsync(), generalSettingsService.ShowWslSection)
+					OptionalTaskAsync(WSLDistroManager.UpdateDrivesAsync(), generalSettingsService.ShowWslSection),
+					OptionalTaskAsync(Task.Run(FileTagsHelper.UpdateTagsDb), generalSettingsService.ShowFileTagsSection)
 				);
 
 				//Start the tasks separately to reduce resource contention

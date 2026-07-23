@@ -106,16 +106,19 @@ namespace Files.App.Services.Settings
 			FileTagList = oldTags;
 		}
 
-		public void DeleteTag(string uid)
+		public bool DeleteTag(string uid)
 		{
 			var index = GetTagIndex(uid);
 			if (index == -1)
-				return;
+				return false;
+
+			if (!UntagAllFiles(uid))
+				return false;
 
 			var oldTags = FileTagList.ToList();
 			oldTags.RemoveAt(index);
 			FileTagList = oldTags;
-			UntagAllFiles(uid);
+			return true;
 		}
 
 		public override bool ImportSettings(object import)
@@ -165,19 +168,22 @@ namespace Files.App.Services.Settings
 			return -1;
 		}
 
-		private void UntagAllFiles(string uid)
+		private bool UntagAllFiles(string uid)
 		{
-			var tagDoDelete = new string[] { uid };
+			var tagToDelete = new string[] { uid };
+			var dbInstance = FileTagsHelper.GetDbInstance();
 
-			foreach (var item in FileTagsHelper.GetDbInstance().GetAll())
+			foreach (var item in dbInstance.GetAll())
 			{
-				if (item.Tags.Contains(uid))
+				if (item.Tags is { Length: > 0 } && item.Tags.Contains(uid))
 				{
-					FileTagsHelper.WriteFileTag(
-						item.FilePath,
-						item.Tags.Except(tagDoDelete).ToArray());
+					var newTags = item.Tags.Except(tagToDelete).ToArray();
+					if (!FileTagsHelper.TrySetFileTags(item.FilePath, item.Frn, newTags))
+						return false;
 				}
 			}
+
+			return true;
 		}
 	}
 }

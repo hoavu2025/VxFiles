@@ -123,28 +123,20 @@ namespace Files.App
 					await SplashScreenLoadingTCS!.Task.WithTimeoutAsync(TimeSpan.FromMilliseconds(500));
 					SplashScreenLoadingTCS = null;
 
-					// System tray integration is intentionally unavailable in the portable build.
-					if (VxFilesEnvironment.SupportsWindowsIntegration)
-					{
-						SystemTrayIcon = new SystemTrayIcon();
-						if (userSettingsService.GeneralSettingsService.ShowSystemTrayIcon)
-							SystemTrayIcon.Show();
-					}
+					SystemTrayIcon = new SystemTrayIcon();
+					if (userSettingsService.GeneralSettingsService.ShowSystemTrayIcon)
+						SystemTrayIcon.Show();
 
 					await MainWindow.Instance.InitializeApplicationAsync(appActivationArguments.Data);
 				}
 				else
 				{
-					// System tray integration is intentionally unavailable in the portable build.
-					if (VxFilesEnvironment.SupportsWindowsIntegration)
-					{
-						SystemTrayIcon = new SystemTrayIcon();
-						if (userSettingsService.GeneralSettingsService.ShowSystemTrayIcon)
-							SystemTrayIcon.Show();
-					}
+					SystemTrayIcon = new SystemTrayIcon();
+					if (userSettingsService.GeneralSettingsService.ShowSystemTrayIcon)
+						SystemTrayIcon.Show();
 
 					// Sleep current instance
-					Program.Pool = new(0, 1, $"Files-{AppLifecycleHelper.AppEnvironment}-Instance");
+					Program.Pool = new(0, 1, VxFilesEnvironment.InstanceSemaphoreName);
 
 					Thread.Yield();
 
@@ -275,7 +267,7 @@ namespace Files.App
 				await FilePropertiesHelpers.WaitClosingAll();
 
 				// Sleep current instance
-				Program.Pool = new(0, 1, $"Files-{AppLifecycleHelper.AppEnvironment}-Instance");
+				Program.Pool = new(0, 1, VxFilesEnvironment.InstanceSemaphoreName);
 
 				Thread.Yield();
 

@@ -1,4 +1,4 @@
-﻿<!--  Copyright (c) Files Community. Licensed under the MIT License.  -->
+<!--  Copyright (c) Files Community. Licensed under the MIT License.  -->
 <Page
 	x:Class="Files.App.Views.Settings.GeneralPage"
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -205,6 +205,10 @@
 						<ToggleSwitch AutomationProperties.Name="{helpers:ResourceString Name=NetworkLocations}" IsOn="{x:Bind ViewModel.ShowNetworkLocationsWidget, Mode=TwoWay}" />
 					</wctcontrols:SettingsCard>
 
+					<wctcontrols:SettingsCard Header="{helpers:ResourceString Name=FileTags}">
+						<ToggleSwitch AutomationProperties.Name="{helpers:ResourceString Name=FileTags}" IsOn="{x:Bind ViewModel.ShowFileTagsWidget, Mode=TwoWay}" />
+					</wctcontrols:SettingsCard>
+
 					<wctcontrols:SettingsCard Header="{helpers:ResourceString Name=RecentFiles}">
 						<ToggleSwitch AutomationProperties.Name="{helpers:ResourceString Name=RecentFiles}" IsOn="{x:Bind ViewModel.ShowRecentFilesWidget, Mode=TwoWay}" />
 					</wctcontrols:SettingsCard>
@@ -288,6 +292,11 @@
 					<!--  Pin to Sidebar  -->
 					<wctcontrols:SettingsCard Header="{helpers:ResourceString Name=ShowPinToSideBar}">
 						<ToggleSwitch AutomationProperties.Name="{helpers:ResourceString Name=ShowPinToSideBar}" IsOn="{x:Bind ViewModel.ShowPinToSideBar, Mode=TwoWay}" />
+					</wctcontrols:SettingsCard>
+
+					<!--  Edit file tags  -->
+					<wctcontrols:SettingsCard Header="{helpers:ResourceString Name=EditTags}">
+						<ToggleSwitch AutomationProperties.Name="{helpers:ResourceString Name=EditTags}" IsOn="{x:Bind ViewModel.ShowEditTagsMenu, Mode=TwoWay}" />
 					</wctcontrols:SettingsCard>
 
 					<!--  Compression options  -->
