@@ -31,6 +31,8 @@ $repositoryRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $artifactsRoot = [System.IO.Path]::GetFullPath((Join-Path $repositoryRoot 'artifacts'))
 $archivePath = Join-Path $artifactsRoot 'VxFiles-portable-win-x64.zip'
 $checksumPath = "$archivePath.sha256"
+$installerPath = Join-Path $artifactsRoot 'VxFiles-Setup-win-x64.exe'
+$installerChecksumPath = "$installerPath.sha256"
 
 # Ensure gh CLI is installed
 $gh = Get-Command gh.exe -ErrorAction SilentlyContinue
@@ -61,6 +63,18 @@ if ($Build -or (-not (Test-Path -LiteralPath $archivePath)) -or (-not (Test-Path
     }
 }
 
+if ($Build -or (-not (Test-Path -LiteralPath $installerPath)) -or (-not (Test-Path -LiteralPath $installerChecksumPath))) {
+    Write-Host 'Building installer package...' -ForegroundColor Cyan
+    $buildInstallerScript = Join-Path $PSScriptRoot 'Build-Installer.ps1'
+    if (Test-Path -LiteralPath $buildInstallerScript) {
+        try {
+            & $buildInstallerScript
+        } catch {
+            Write-Warning "Installer build failed. Will continue without installer. Details: $_"
+        }
+    }
+}
+
 if (-not (Test-Path -LiteralPath $archivePath -PathType Leaf)) {
     throw "Release archive not found at $archivePath. Run Build-Portable.ps1 first or use -Build."
 }
@@ -76,6 +90,13 @@ $ghArgs = @(
     $checksumPath,
     '--title', $Title
 )
+
+if (Test-Path -LiteralPath $installerPath) {
+    $ghArgs += $installerPath
+}
+if (Test-Path -LiteralPath $installerChecksumPath) {
+    $ghArgs += $installerChecksumPath
+}
 
 if (-not [string]::IsNullOrWhiteSpace($Notes)) {
     $ghArgs += @('--notes', $Notes)
