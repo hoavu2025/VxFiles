@@ -41,3 +41,27 @@ The check verifies that the portable icon and splash assets are present, the spl
 7. Confirm no VxFiles package was installed and no VxFiles or Files Community registry keys were created.
 
 Always pilot the artifact on a coworker's managed machine before wider sharing, because company application-control policy varies.
+
+## Release automation
+
+To publish a portable release archive to GitHub Releases via `gh` CLI:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Publish-Release.ps1 `
+    -TagName "v1.0.0" `
+    -Title "VxFiles v1.0.0" `
+    -Build
+```
+
+### Script Parameters (`Publish-Release.ps1`)
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `-TagName` | String | Release tag name (e.g. `v1.0.0`). Prompts interactively if omitted. |
+| `-Title` | String | Release title. Defaults to `VxFiles <TagName>`. |
+| `-Notes` | String | Release notes text body. |
+| `-NotesFile` | String | Path to a markdown file containing release notes. |
+| `-TargetCommit` | String | Target commit or branch (e.g. `main`). |
+| `-Draft` | Switch | Creates the GitHub release as a draft. |
+| `-Prerelease` | Switch | Marks the GitHub release as a pre-release. |
+| `-Build` | Switch | Automatically runs `Build-Portable.ps1 -Configuration Release` prior to publishing. |

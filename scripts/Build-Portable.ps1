@@ -91,7 +91,8 @@ if (Test-Path -LiteralPath $checksumPath) {
     Remove-Item -LiteralPath $checksumPath -Force
 }
 
-Compress-Archive -Path (Join-Path $stagingDirectory '*') -DestinationPath $archivePath -CompressionLevel Optimal
+$stagingItems = Get-ChildItem -LiteralPath $stagingDirectory
+Compress-Archive -Path $stagingItems.FullName -DestinationPath $archivePath -CompressionLevel Optimal
 $hash = (Get-FileHash -LiteralPath $archivePath -Algorithm SHA256).Hash.ToLowerInvariant()
 Set-Content -LiteralPath $checksumPath -Value "$hash  $(Split-Path $archivePath -Leaf)" -Encoding ascii
 

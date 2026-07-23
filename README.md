@@ -35,7 +35,23 @@ The script creates:
 - `artifacts\VxFiles-portable-win-x64.zip`
 - `artifacts\VxFiles-portable-win-x64.zip.sha256`
 
-See [docs/PORTABLE.md](docs/PORTABLE.md) for distribution limitations and smoke-test guidance.
+See [docs/PORTABLE.md](docs/PORTABLE.md) for distribution limitations, release automation, and smoke-test guidance.
+
+## Publish a GitHub release
+
+Requirements:
+
+- [GitHub CLI](https://cli.github.com/) installed (`gh`) and authenticated (`gh auth login`)
+
+Run `Publish-Release.ps1` to publish the portable build artifacts:
+
+```powershell
+# Interactive mode (prompts for tag name and auto-builds if needed)
+.\scripts\Publish-Release.ps1
+
+# Non-interactive command with parameters
+.\scripts\Publish-Release.ps1 -TagName "v1.0.0" -Title "VxFiles v1.0.0" -Build
+```
 
 ## Upstream and licensing
 
