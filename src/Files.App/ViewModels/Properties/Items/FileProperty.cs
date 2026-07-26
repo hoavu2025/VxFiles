@@ -6,7 +6,6 @@ using Files.Shared.Helpers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
 using System.Collections.Concurrent;
-using Windows.Storage;
 
 namespace Files.App.ViewModels.Properties
 {
@@ -300,8 +299,7 @@ namespace Files.App.ViewModels.Properties
 			string text;
 			if (!cachedPropertiesListFiles.TryGetValue(path, out text))
 			{
-				var propertiesJsonFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri(path));
-				text = await FileIO.ReadTextAsync(propertiesJsonFile);
+				text = await VxFilesEnvironment.ReadAppResourceTextAsync(path);
 				cachedPropertiesListFiles[path] = text;
 			}
 

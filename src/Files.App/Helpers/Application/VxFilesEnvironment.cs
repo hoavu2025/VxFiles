@@ -39,6 +39,17 @@ namespace Files.App.Helpers.Application
 		public static Task<StorageFolder> GetTemporaryFolderAsync()
 			=> StorageFolder.GetFolderFromPathAsync(TemporaryDataPath).AsTask();
 
+		public static Task<string> ReadAppResourceTextAsync(string resourceUri)
+		{
+			const string AppResourcePrefix = "ms-appx:///";
+			if (!resourceUri.StartsWith(AppResourcePrefix, StringComparison.OrdinalIgnoreCase))
+				throw new ArgumentException("The resource URI must use the ms-appx scheme.", nameof(resourceUri));
+
+			var relativePath = resourceUri[AppResourcePrefix.Length..]
+				.Replace('/', Path.DirectorySeparatorChar);
+			return File.ReadAllTextAsync(Path.Combine(InstallPath, relativePath));
+		}
+
 		public static int GetActiveInstanceProcessId()
 			=> GetState(ActiveInstanceProcessIdKey, -1);
 
