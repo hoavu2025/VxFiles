@@ -4608,4 +4608,10 @@
   <data name="AutomationTrustRun" xml:space="preserve">
     <value>Trust and run</value>
   </data>
+  <data name="AutomationBarInitializationFailed" xml:space="preserve">
+    <value>Automation Bar initialization failed.</value>
+  </data>
+  <data name="AutomationActionFailed" xml:space="preserve">
+    <value>Automation action failed to run.</value>
+  </data>
 </root>

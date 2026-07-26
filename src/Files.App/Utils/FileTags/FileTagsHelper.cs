@@ -48,14 +48,17 @@ namespace Files.App.Utils.FileTags
 			try
 			{
 				var previousTags = ReadFileTag(filePath);
-				if (!TryWriteFileTag(filePath, tags))
-					return false;
+				bool adsWritten = TryWriteFileTag(filePath, tags);
 
 				if (GetDbInstance().SetTags(filePath, frn, tags))
 					return true;
 
-				if (!TryWriteFileTag(filePath, previousTags))
-					App.Logger?.LogError("Failed to restore file tags ADS for {FilePath} after a database write failure.", filePath);
+				// If authoritative DB write failed, restore previous ADS tags to maintain consistency
+				if (adsWritten)
+				{
+					if (!TryWriteFileTag(filePath, previousTags))
+						App.Logger?.LogError("Failed to restore file tags ADS for {FilePath} after a database write failure.", filePath);
+				}
 
 				return false;
 			}
@@ -135,36 +138,47 @@ namespace Files.App.Utils.FileTags
 				var pathFromFrn = Win32Helper.PathFromFileId(file.Frn ?? 0, file.FilePath);
 				if (pathFromFrn is not null)
 				{
-					// Frn is valid, update file path
-					var tag = ReadFileTag(pathFromFrn.Replace(@"\\?\", "", StringComparison.Ordinal));
-					if (tag is not null && tag.Any())
+					var cleanPath = pathFromFrn.Replace(@"\\?\", "", StringComparison.Ordinal);
+					var adsTags = ReadFileTag(cleanPath);
+
+					if (adsTags is not null && adsTags.Any())
 					{
-						dbInstance.UpdateTag(file.Frn ?? 0, null, pathFromFrn.Replace(@"\\?\", "", StringComparison.Ordinal));
-						dbInstance.SetTags(pathFromFrn.Replace(@"\\?\", "", StringComparison.Ordinal), file.Frn, tag);
+						dbInstance.UpdateTag(file.Frn ?? 0, null, cleanPath);
+						dbInstance.SetTags(cleanPath, file.Frn, adsTags);
 					}
 					else
 					{
-						dbInstance.SetTags(pathFromFrn.Replace(@"\\?\", "", StringComparison.Ordinal), file.Frn, []);
+						dbInstance.UpdateTag(file.Frn ?? 0, null, cleanPath);
+						if (file.Tags is not null && file.Tags.Any())
+						{
+							dbInstance.SetTags(cleanPath, file.Frn, file.Tags);
+							TryWriteFileTag(cleanPath, file.Tags);
+						}
 					}
 				}
 				else
 				{
-					var tag = ReadFileTag(file.FilePath);
-					if (tag is not null && tag.Any())
+					bool fileExists = IO.File.Exists(file.FilePath) || IO.Directory.Exists(file.FilePath);
+					if (fileExists)
 					{
-						if (!SafetyExtensions.IgnoreExceptions(() =>
+						var adsTags = ReadFileTag(file.FilePath);
+						var currentFrn = GetFileFRN(file.FilePath);
+
+						if (adsTags is not null && adsTags.Any())
 						{
-							var frn = GetFileFRN(file.FilePath);
-							dbInstance.UpdateTag(file.FilePath, frn, null);
-							dbInstance.SetTags(file.FilePath, frn, tag);
-						}, App.Logger))
+							dbInstance.UpdateTag(file.FilePath, currentFrn, null);
+							dbInstance.SetTags(file.FilePath, currentFrn, adsTags);
+						}
+						else if (file.Tags is not null && file.Tags.Any())
 						{
-							dbInstance.SetTags(file.FilePath, null, []);
+							dbInstance.UpdateTag(file.FilePath, currentFrn, null);
+							dbInstance.SetTags(file.FilePath, currentFrn, file.Tags);
+							TryWriteFileTag(file.FilePath, file.Tags);
 						}
 					}
 					else
 					{
-						dbInstance.SetTags(file.FilePath, null, []);
+						dbInstance.SetTags(file.FilePath, file.Frn, []);
 					}
 				}
 			}

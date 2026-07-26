@@ -33,13 +33,31 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Test-PortableS
 
 The check verifies that the portable icon and splash assets are present, the splash image renders, the shell exposes both `SettingsButton` and a window icon, closing the window terminates the process, and a second launch reaches the real shell.
 
+### Portable Verification Matrix
+
 1. Extract the ZIP into a new folder.
 2. Launch `VxFiles.exe` from a non-elevated account.
 3. Open several folders and tabs.
 4. In a disposable test folder, copy, move, rename, and delete test files.
-5. Change a setting, close VxFiles, relaunch it, and confirm the setting persisted.
-6. Confirm `%LOCALAPPDATA%\VxFiles` contains the app state and logs.
-7. Confirm no VxFiles package was installed and no VxFiles or Files Community registry keys were created.
+5. **Tag Persistence Verification**:
+   - Apply a tag to a test file on an NTFS drive. Confirm `%LOCALAPPDATA%\VxFiles\filetags.db` is updated with the tag, FRN, and path.
+   - Confirm ADS tag marker (`:files`) is created on NTFS.
+   - Test tagging a file on a non-ADS volume (e.g. FAT32/exFAT drive or network share); confirm JSON database persistence succeeds cleanly.
+   - Rename a tagged file; verify tag remains attached by FRN matching and database records do not duplicate.
+   - Restart VxFiles and verify file tags persist.
+6. **Tray & Background Lifecycle Matrix**:
+   - Both `ShowSystemTrayIcon` and `LeaveAppRunning` default to **OFF** (`false`) in both ZIP portable and Inno Setup installer builds.
+   - **Tray OFF / Background OFF**: Standard windowed mode. Closing the main window exits the process completely.
+   - **Tray ON / Background OFF**: Notification tray icon is displayed. Closing the main window exits the process completely.
+   - **Tray OFF / Background ON**: App continues running in background on main window close. Relaunching `VxFiles.exe` brings up the existing session.
+   - **Tray ON / Background ON**: Full system tray background mode. Closing the main window hides it to the system tray. Exiting via the tray icon context menu terminates the process cleanly.
+   - Verify no `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` registry keys or OS startup tasks are created under any combination.
+7. **Installed-Upgrade & Coexistence Verification**:
+   - Confirm running the portable build on a system with an installed Files Community build does not overwrite or read `%LOCALAPPDATA%\Packages` or registry entries.
+   - Confirm replacing portable binaries (upgrading) preserves `%LOCALAPPDATA%\VxFiles` data, logs, and settings.
+8. Change a setting, close VxFiles, relaunch it, and confirm the setting persisted.
+9. Confirm `%LOCALAPPDATA%\VxFiles` contains the app state and logs.
+10. Confirm no VxFiles package was installed and no VxFiles or Files Community registry keys were created.
 
 Always pilot the artifact on a coworker's managed machine before wider sharing, because company application-control policy varies.
 

@@ -117,24 +117,20 @@ namespace Files.App
 
 				Logger.LogInformation($"App launched. Launch args type: {appActivationArguments.Data.GetType().Name}");
 
+				SystemTrayIcon = new SystemTrayIcon();
+				if (userSettingsService.GeneralSettingsService.ShowSystemTrayIcon)
+					SystemTrayIcon.Show();
+
 				if (!(isStartupTask && isLeaveAppRunning))
 				{
 					// Wait for the UI to update
 					await SplashScreenLoadingTCS!.Task.WithTimeoutAsync(TimeSpan.FromMilliseconds(500));
 					SplashScreenLoadingTCS = null;
 
-					SystemTrayIcon = new SystemTrayIcon();
-					if (userSettingsService.GeneralSettingsService.ShowSystemTrayIcon)
-						SystemTrayIcon.Show();
-
 					await MainWindow.Instance.InitializeApplicationAsync(appActivationArguments.Data);
 				}
 				else
 				{
-					SystemTrayIcon = new SystemTrayIcon();
-					if (userSettingsService.GeneralSettingsService.ShowSystemTrayIcon)
-						SystemTrayIcon.Show();
-
 					// Sleep current instance
 					Program.Pool = new(0, 1, VxFilesEnvironment.InstanceSemaphoreName);
 

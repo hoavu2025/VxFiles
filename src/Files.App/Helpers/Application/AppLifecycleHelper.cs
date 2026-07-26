@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Files.App.Helpers.Application;
+using Files.App.Services;
 using Files.App.Services.SizeProvider;
 using Files.App.Utils.FileTags;
 using Files.App.ViewModels.Settings;
@@ -199,6 +200,7 @@ namespace Files.App.Helpers
 					.AddSingleton<ISidebarContext, SidebarContext>()
 					.AddSingleton<IShelfContext, ShelfContext>()
 					// Services
+					.AddSingleton<IAutomationService, AutomationService>()
 					.AddSingleton<IWindowsRecentItemsService, WindowsRecentItemsService>()
 					.AddSingleton<IWindowsIniService, WindowsIniService>()
 					.AddSingleton<IWindowsWallpaperService, WindowsWallpaperService>()

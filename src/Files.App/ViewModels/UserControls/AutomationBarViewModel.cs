@@ -15,8 +15,8 @@ namespace Files.App.ViewModels.UserControls;
 
 public sealed partial class AutomationBarViewModel : ObservableObject, IAsyncDisposable
 {
+	private readonly IAutomationService _automationService;
 	private readonly AutomationHostBridge _hostBridge;
-	private readonly FilesAutomationTrustConsent _trustConsent;
 	private readonly DispatcherQueue _dispatcherQueue;
 	private IAutomationBarSession? _session;
 	private Task? _initialization;
@@ -38,11 +38,11 @@ public sealed partial class AutomationBarViewModel : ObservableObject, IAsyncDis
 	public IAsyncRelayCommand CancelCommand { get; }
 
 	public AutomationBarViewModel(
-		AutomationHostBridge hostBridge,
-		FilesAutomationTrustConsent trustConsent)
+		IAutomationService automationService,
+		AutomationHostBridge hostBridge)
 	{
+		_automationService = automationService;
 		_hostBridge = hostBridge;
-		_trustConsent = trustConsent;
 		_dispatcherQueue = MainWindow.Instance.DispatcherQueue;
 		CancelCommand = new AsyncRelayCommand(CancelAsync, () => IsRunning);
 	}
@@ -62,36 +62,17 @@ public sealed partial class AutomationBarViewModel : ObservableObject, IAsyncDis
 	{
 		try
 		{
-			var userActions = SystemIO.Path.Join(VxFilesEnvironment.LocalDataPath, "Automation", "Actions");
-			var bundledActions = SystemIO.Path.Join(VxFilesEnvironment.InstallPath, "AutomationActions");
-			var stateRoot = SystemIO.Path.Join(VxFilesEnvironment.LocalDataPath, "Automation", "State");
-			var temporaryRoot = SystemIO.Path.Join(VxFilesEnvironment.TemporaryDataPath, "VxFiles", "Automation");
-			SystemIO.Directory.CreateDirectory(userActions);
-			SystemIO.Directory.CreateDirectory(stateRoot);
-			SystemIO.Directory.CreateDirectory(temporaryRoot);
-
-			var roots = SystemIO.Directory.Exists(bundledActions)
-				? ImmutableArray.Create(bundledActions, userActions)
-				: ImmutableArray.Create(userActions);
-			var options = AutomationModule.CreateDefaultOptions(
-				roots,
-				stateRoot,
-				temporaryRoot,
-				VxFilesEnvironment.Version,
-				CultureInfo.CurrentUICulture.Name);
-			var stateStore = new FileAutomationStateStore(stateRoot);
-			_session = await Task.Run(async () => await AutomationModule.OpenAsync(
-				options,
-				stateStore,
-				_trustConsent,
-				_hostBridge));
-			_session.PropertyChanged += Session_PropertyChanged;
-			RefreshSnapshot();
+			_session = await _automationService.InitializeSessionAsync();
+			if (_session is not null)
+			{
+				_session.PropertyChanged += Session_PropertyChanged;
+				RefreshSnapshot();
+			}
 		}
 		catch (Exception exception)
 		{
 			App.Logger.LogWarning(exception, "Automation Bar initialization failed.");
-			RunStatus = exception.Message;
+			RunStatus = "AutomationBarInitializationFailed".GetLocalizedResource();
 			RunStatusVisibility = Visibility.Visible;
 		}
 	}
@@ -145,7 +126,7 @@ public sealed partial class AutomationBarViewModel : ObservableObject, IAsyncDis
 		catch (Exception exception)
 		{
 			App.Logger.LogWarning(exception, "Automation Action {ActionId} failed to start.", actionId.Value);
-			RunStatus = exception.Message;
+			RunStatus = "AutomationActionFailed".GetLocalizedResource();
 			RunStatusVisibility = Visibility.Visible;
 		}
 	}

@@ -10,11 +10,9 @@ $artifactsRoot = Join-Path $repositoryRoot 'artifacts'
 $stagingDirectory = Join-Path $artifactsRoot 'staging\VxFiles-portable-win-x64'
 $installerScript = Join-Path $repositoryRoot 'installer\VxFiles.iss'
 
-# Check if portable build exists
-if (-not (Test-Path -LiteralPath $stagingDirectory)) {
-    Write-Warning "Staging directory not found. Running Build-Portable.ps1 to generate it..."
-    & (Join-Path $PSScriptRoot 'Build-Portable.ps1') -Configuration Release
-}
+# Build Release portable payload to ensure fresh staging artifacts
+Write-Output "Generating fresh Release portable build for installer packaging..."
+& (Join-Path $PSScriptRoot 'Build-Portable.ps1') -Configuration Release
 
 # Find Inno Setup Compiler
 $iscc = $null
@@ -39,7 +37,7 @@ if (Get-Command "iscc.exe" -ErrorAction SilentlyContinue) {
 
 if ($null -eq $iscc) {
     Write-Warning "Inno Setup Compiler (ISCC.exe) not found. Attempting to download Inno Setup..."
-    
+
     # We can use winget to install Inno Setup if it's missing, but for now we'll throw an error
     # since we don't want to make system-wide changes unprompted.
     throw "Inno Setup Compiler not found. Please install Inno Setup 6/7 to build the installer (https://jrsoftware.org/isdl.php) or provide the path via -InnoSetupCompilerPath."

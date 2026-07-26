@@ -1,6 +1,7 @@
-﻿// Copyright (c) Files Community
+// Copyright (c) Files Community
 // Licensed under the MIT License.
 
+using Files.App.Runtime;
 using Files.Shared.Helpers;
 using Microsoft.Extensions.Logging;
 using System.IO;
@@ -128,8 +129,14 @@ namespace Files.App.Utils.Shell
 
 				return true;
 			}
-			catch (Win32Exception)
+			catch (Win32Exception ex)
 			{
+				if (ProcessLaunchFailurePolicy.ShouldShowCannotRunDialog(ex.NativeErrorCode, FileExtensionHelpers.IsExecutableFile(application)))
+				{
+					App.Logger.LogWarning(ex, $"Cannot run application {application} due to native error code {ex.NativeErrorCode}");
+					return false;
+				}
+
 				using Process process = new Process();
 				process.StartInfo.UseShellExecute = true;
 				process.StartInfo.FileName = application;
@@ -145,13 +152,19 @@ namespace Files.App.Utils.Shell
 
 					return true;
 				}
-				catch (Win32Exception ex) when (ex.NativeErrorCode == 50)
+				catch (Win32Exception ex2) when (ex2.NativeErrorCode == 50)
 				{
 					// ShellExecute return code 50 (ERROR_NOT_SUPPORTED) for some exes (#15179)
 					return Win32Helper.RunPowershellCommand($"\"{application}\"", PowerShellExecutionOptions.Hidden);
 				}
-				catch (Win32Exception)
+				catch (Win32Exception ex2)
 				{
+					if (ProcessLaunchFailurePolicy.ShouldShowCannotRunDialog(ex2.NativeErrorCode, FileExtensionHelpers.IsExecutableFile(application)))
+					{
+						App.Logger.LogWarning(ex2, $"Cannot run application {application} due to native error code {ex2.NativeErrorCode}");
+						return false;
+					}
+
 					try
 					{
 						var opened = await STATask.Run(async () =>

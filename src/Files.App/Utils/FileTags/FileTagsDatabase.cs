@@ -39,7 +39,9 @@ namespace Files.App.Utils.FileTags
 			{
 				var files = LoadInternal();
 				var normalizedPath = NormalizePath(filePath);
-				var existingIndex = files.FindIndex(f => string.Equals(NormalizePath(f.FilePath), normalizedPath, StringComparison.OrdinalIgnoreCase));
+				var existingIndex = files.FindIndex(f =>
+					string.Equals(NormalizePath(f.FilePath), normalizedPath, StringComparison.OrdinalIgnoreCase) ||
+					(frn.HasValue && frn.Value > 0 && f.Frn.HasValue && f.Frn.Value == frn.Value));
 
 				if (existingIndex < 0)
 				{
@@ -56,20 +58,26 @@ namespace Files.App.Utils.FileTags
 				}
 				else
 				{
-					var existing = files[existingIndex];
-
 					if (cleanTags.Length == 0)
 					{
 						files.RemoveAt(existingIndex);
+						files.RemoveAll(f =>
+							string.Equals(NormalizePath(f.FilePath), normalizedPath, StringComparison.OrdinalIgnoreCase) ||
+							(frn.HasValue && frn.Value > 0 && f.Frn.HasValue && f.Frn.Value == frn.Value));
 						SaveInternal(files);
 					}
 					else
 					{
+						var existing = files[existingIndex];
 						bool tagsChanged = !SetEquals(existing.Tags, cleanTags);
 						bool frnChanged = frn.HasValue && frn.Value > 0 && existing.Frn != frn.Value;
 						bool pathChanged = !string.Equals(existing.FilePath, filePath, StringComparison.Ordinal);
 
-						if (!tagsChanged && !frnChanged && !pathChanged)
+						int removedCount = files.RemoveAll(f => !ReferenceEquals(f, existing) && (
+							string.Equals(NormalizePath(f.FilePath), normalizedPath, StringComparison.OrdinalIgnoreCase) ||
+							(frn.HasValue && frn.Value > 0 && f.Frn.HasValue && f.Frn.Value == frn.Value)));
+
+						if (!tagsChanged && !frnChanged && !pathChanged && removedCount == 0)
 							return;
 
 						existing.FilePath = filePath;
@@ -220,19 +228,44 @@ namespace Files.App.Utils.FileTags
 				if (imported is null)
 					return;
 
-				var validItems = imported
-					.Where(item => item is not null && !string.IsNullOrWhiteSpace(item.FilePath))
-					.Select(item => new TaggedFile
-					{
-						FilePath = item.FilePath,
-						Frn = item.Frn,
-						Tags = item.Tags?.Where(t => !string.IsNullOrWhiteSpace(t)).Distinct(StringComparer.OrdinalIgnoreCase).ToArray() ?? Array.Empty<string>()
-					})
-					.GroupBy(item => NormalizePath(item.FilePath), StringComparer.OrdinalIgnoreCase)
-					.Select(group => group.Last())
-					.ToList();
+				var files = LoadInternal();
+				foreach (var item in imported)
+				{
+					if (item is null || string.IsNullOrWhiteSpace(item.FilePath))
+						continue;
 
-				SaveInternal(validItems);
+					var cleanTags = item.Tags?.Where(t => !string.IsNullOrWhiteSpace(t)).Distinct(StringComparer.OrdinalIgnoreCase).ToArray() ?? Array.Empty<string>();
+					var normalizedPath = NormalizePath(item.FilePath);
+
+					var existingIndex = files.FindIndex(f =>
+						string.Equals(NormalizePath(f.FilePath), normalizedPath, StringComparison.OrdinalIgnoreCase) ||
+						(item.Frn.HasValue && item.Frn.Value > 0 && f.Frn.HasValue && f.Frn.Value == item.Frn.Value));
+
+					if (existingIndex >= 0)
+					{
+						files[existingIndex] = new TaggedFile
+						{
+							FilePath = item.FilePath,
+							Frn = item.Frn,
+							Tags = cleanTags
+						};
+
+						files.RemoveAll(f => !ReferenceEquals(f, files[existingIndex]) && (
+							string.Equals(NormalizePath(f.FilePath), normalizedPath, StringComparison.OrdinalIgnoreCase) ||
+							(item.Frn.HasValue && item.Frn.Value > 0 && f.Frn.HasValue && f.Frn.Value == item.Frn.Value)));
+					}
+					else
+					{
+						files.Add(new TaggedFile
+						{
+							FilePath = item.FilePath,
+							Frn = item.Frn,
+							Tags = cleanTags
+						});
+					}
+				}
+
+				SaveInternal(files);
 			});
 		}
 
@@ -367,7 +400,16 @@ namespace Files.App.Utils.FileTags
 							continue;
 
 						item.Tags = item.Tags?.Where(t => !string.IsNullOrWhiteSpace(t)).Distinct(StringComparer.OrdinalIgnoreCase).ToArray() ?? Array.Empty<string>();
-						result.Add(item);
+
+						var normalizedPath = NormalizePath(item.FilePath);
+						var existingIndex = result.FindIndex(f =>
+							string.Equals(NormalizePath(f.FilePath), normalizedPath, StringComparison.OrdinalIgnoreCase) ||
+							(item.Frn.HasValue && item.Frn.Value > 0 && f.Frn.HasValue && f.Frn.Value == item.Frn.Value));
+
+						if (existingIndex >= 0)
+							result[existingIndex] = item;
+						else
+							result.Add(item);
 					}
 				}
 
