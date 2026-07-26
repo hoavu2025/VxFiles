@@ -18,7 +18,10 @@ Future upstream work starts from an accepted VxFiles line, merges a named stable
 
 Every stable-tag intake must follow `docs/VXFILES-UPSTREAM-MERGE-CHECKLIST.md` so the unpackaged compatibility layer, branding, and release path are retained.
 
+**Automation Package**
+A VxFiles automation install, update, validation, and trust unit. One package contains a `vxpackage.json` manifest and one or more Automation Actions, and appears as a root item in the Tools TreeView.
+
 **Automation Action**
-A future named automation discoverable through a filterable third right-pane tab after Details and Preview. Automation Actions are outside V1.
+A named Python automation inside an Automation Package. Actions are independently runnable against an immutable folder-and-selection snapshot and appear as children of their package in the filterable Tools tab.
 
 V1 does not import settings or data from Files or earlier VxFiles distributions.
