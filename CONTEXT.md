@@ -8,18 +8,18 @@ VxFiles is a personalized Windows file manager derived from Files Community and 
 The user-facing identity of the personalized application and its distributions. Internal source identifiers inherited from Files Community are not part of the VxFiles brand.
 _Avoid_: Files - Dev, Files - VxDev
 
-**Portable Build**:
-A self-contained, unpackaged ZIP distribution that runs without installation or administrator rights. Application settings may remain in the current user's profile rather than traveling with the application folder.
-_Avoid_: Portable installer, standalone EXE
+**Installed Distribution**:
+The only supported VxFiles distribution: a self-contained MSIX package registered by Windows and delivered through App Installer from the VxFiles fork.
+_Avoid_: Portable Build, ZIP build, unpackaged build
 
-**Zero-Integration Default**:
-The Portable Build makes no automatic, persistent changes to Windows integration. Optional per-user integrations must be initiated explicitly and must not require administrator rights.
-_Avoid_: Silent registration, automatic shell integration
+**Downstream Layer**:
+The intentionally small set of VxFiles-owned differences applied to a tagged Files Community baseline.
+_Avoid_: Independent codebase, source fork rewrite
 
-**Local Diagnostics**:
-Diagnostic information retained on the user's device for troubleshooting. VxFiles does not transmit telemetry or crash reports.
-_Avoid_: Analytics, remote crash reporting
+**Automation Action**:
+A future named automation that users discover and filter in the third right-pane tab, after Details and Preview.
+_Avoid_: Automation Bar, automation session
 
 **VxFiles Data**:
-Settings, caches, diagnostics, and other persistent state owned exclusively by VxFiles under the current user's local application data. It neither shares with nor migrates data from an installed Files application.
+Settings, caches, and other persistent state owned by the VxFiles package identity. V1 neither imports nor preserves data from Files or earlier VxFiles distributions.
 _Avoid_: Files data, portable settings
