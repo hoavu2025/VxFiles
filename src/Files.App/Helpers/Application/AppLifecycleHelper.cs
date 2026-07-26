@@ -82,12 +82,7 @@ namespace Files.App.Helpers
 		/// Gets application icon path.
 		/// </summary>
 		public static string AppIconPath { get; } =
-			SystemIO.Path.Combine(VxFilesEnvironment.InstallPath, AppEnvironment switch
-			{
-				AppEnvironment.Dev => Constants.AssetPaths.DevLogo,
-				AppEnvironment.SideloadPreview or AppEnvironment.StorePreview => Constants.AssetPaths.PreviewLogo,
-				_ => Constants.AssetPaths.StableLogo
-			});
+			SystemIO.Path.Combine(VxFilesEnvironment.InstallPath, Constants.AssetPaths.DevLogo);
 
 		/// <summary>
 		/// Initializes the app components.
@@ -173,9 +168,16 @@ namespace Files.App.Helpers
 		/// </summary>
 		public static void ConfigureSentry()
 		{
+			var dsn = Constants.AutomatedWorkflowInjectionKeys.SentrySecret;
+			if (!Uri.TryCreate(dsn, UriKind.Absolute, out var dsnUri) ||
+				(dsnUri.Scheme != Uri.UriSchemeHttp && dsnUri.Scheme != Uri.UriSchemeHttps))
+			{
+				return;
+			}
+
 			SentrySdk.Init(options =>
 			{
-				options.Dsn = Constants.AutomatedWorkflowInjectionKeys.SentrySecret;
+				options.Dsn = dsn;
 				options.AutoSessionTracking = true;
 				options.Release = AppVersion.ToString(3);
 				options.TracesSampleRate = 0.10;

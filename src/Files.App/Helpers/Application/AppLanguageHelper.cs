@@ -16,6 +16,7 @@ namespace Files.App.Helpers
 		/// It is initialized as an empty string.
 		/// </summary>
 		private static readonly string _defaultCode = string.Empty;
+		private const string PreferredLanguageKey = "PreferredLanguage";
 
 		/// <summary>
 		/// A collection of available languages.
@@ -48,7 +49,9 @@ namespace Files.App.Helpers
 		static AppLanguageHelper()
 		{
 			// Populate the Languages collection with available languages
-			var appLanguages = ApplicationLanguages.ManifestLanguages
+			var appLanguages = ApplicationLanguages.Languages
+			   .Append("en-US")
+			   .Distinct(StringComparer.OrdinalIgnoreCase)
 			   .Append(string.Empty) // Add default language code
 			   .Select(language => new AppLanguageItem(language))
 			   .OrderBy(language => language.Code is not "") // Default language on top
@@ -56,7 +59,7 @@ namespace Files.App.Helpers
 			   .ToList();
 
 			// Get the current primary language override.
-			var current = new AppLanguageItem(ApplicationLanguages.PrimaryLanguageOverride);
+			var current = new AppLanguageItem(VxFilesEnvironment.GetState(PreferredLanguageKey, _defaultCode));
 
 			// Find the index of the saved language
 			var index = appLanguages.IndexOf(appLanguages.FirstOrDefault(dl => dl.Name == current.Name) ?? appLanguages.First());
@@ -86,7 +89,7 @@ namespace Files.App.Helpers
 			PreferredLanguage = SupportedLanguages[index];
 
 			// Update the primary language override
-			ApplicationLanguages.PrimaryLanguageOverride = index == 0 ? _defaultCode : PreferredLanguage.Code;
+			VxFilesEnvironment.SetState(PreferredLanguageKey, index == 0 ? _defaultCode : PreferredLanguage.Code);
 			return true;
 		}
 
@@ -116,7 +119,7 @@ namespace Files.App.Helpers
 			PreferredLanguage = SupportedLanguages[index];
 
 			// Update the primary language override
-			ApplicationLanguages.PrimaryLanguageOverride = index == 0 ? _defaultCode : PreferredLanguage.Code;
+			VxFilesEnvironment.SetState(PreferredLanguageKey, index == 0 ? _defaultCode : PreferredLanguage.Code);
 			return true;
 		}
 	}
