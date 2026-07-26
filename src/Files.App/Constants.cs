@@ -201,7 +201,7 @@ namespace Files.App
 			public const string PrivacyPolicyUrl = @"https://files.community/privacy";
 			public const string SupportUsUrl = @"https://github.com/hoavu2025/VxFiles";
 			public const string CrowdinUrl = @"https://crowdin.com/project/files-app";
-			public static readonly string ReleaseNotesUrl = $"https://github.com/hoavu2025/VxFiles/releases/tag/v{Package.Current.Id.Version.Major}.{Package.Current.Id.Version.Minor}.{Package.Current.Id.Version.Build}";
+			public static readonly string ReleaseNotesUrl = $"https://github.com/hoavu2025/VxFiles/releases/tag/v{VxFilesEnvironment.Version.Major}.{VxFilesEnvironment.Version.Minor}.{VxFilesEnvironment.Version.Build}";
 		}
 
 		public static class DocsPath

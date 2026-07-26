@@ -1,4 +1,4 @@
-﻿// Copyright (c) Files Community
+// Copyright (c) Files Community
 // Licensed under the MIT License.
 
 using Sentry;
@@ -142,7 +142,7 @@ namespace Files.App.Utils.Taskbar
 		public SystemTrayIcon()
 		{
 			_Icon = new(AppLifecycleHelper.AppIconPath);
-			_Tooltip = Package.Current.DisplayName;
+			_Tooltip = VxFilesEnvironment.DisplayName;
 			_taskbarRestartMessageId = PInvoke.RegisterWindowMessage("TaskbarCreated");
 
 			Id = _trayIconGuid;
@@ -274,7 +274,7 @@ namespace Files.App.Utils.Taskbar
 			{
 				_lastLaunchDate = DateTime.Now;
 
-				_ = Launcher.LaunchUriAsync(new Uri("vxfiles:"));
+				_ = VxFilesEnvironment.LaunchAsync();
 			}
 			else
 				MainWindow.Instance.Activate();
@@ -289,7 +289,7 @@ namespace Files.App.Utils.Taskbar
 		{
 			Microsoft.Windows.AppLifecycle.AppInstance.Restart("");
 
-			var pool = new Semaphore(0, 1, $"Files-{AppLifecycleHelper.AppEnvironment}-Instance", out var isNew);
+			var pool = new Semaphore(0, 1, VxFilesEnvironment.InstanceSemaphoreName, out var isNew);
 			if (!isNew)
 				pool.Release();
 
@@ -304,7 +304,7 @@ namespace Files.App.Utils.Taskbar
 
 				App.AppModel.ForceProcessTermination = true;
 
-				var pool = new Semaphore(0, 1, $"Files-{AppLifecycleHelper.AppEnvironment}-Instance", out var isNew);
+				var pool = new Semaphore(0, 1, VxFilesEnvironment.InstanceSemaphoreName, out var isNew);
 				if (!isNew)
 					pool.Release();
 				else

@@ -19,12 +19,12 @@ namespace Files.App.Utils.Storage
 		{
 			if (string.IsNullOrEmpty(fileExtension))
 			{
-				StorageFolder localFolder = ApplicationData.Current.RoamingFolder;
+				StorageFolder localFolder = await VxFilesEnvironment.GetLocalFolderAsync();
 				return await localFolder.GetThumbnailAsync(ThumbnailMode.ListView, requestedSize, ThumbnailOptions.UseCurrentScale);
 			}
 			else
 			{
-				StorageFile emptyFile = await ApplicationData.Current.LocalCacheFolder.CreateFileAsync(string.Join(Constants.Filesystem.CachedEmptyItemName, fileExtension), CreationCollisionOption.OpenIfExists);
+				StorageFile emptyFile = await (await VxFilesEnvironment.GetLocalFolderAsync()).CreateFileAsync(string.Join(Constants.Filesystem.CachedEmptyItemName, fileExtension), CreationCollisionOption.OpenIfExists);
 				var icon = await emptyFile.GetThumbnailAsync(ThumbnailMode.ListView, requestedSize, ThumbnailOptions.UseCurrentScale);
 
 				if (persistenceOptions == IconPersistenceOptions.LoadOnce)

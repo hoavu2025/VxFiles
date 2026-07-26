@@ -1,4 +1,4 @@
-﻿<!--  Copyright (c) Files Community. Licensed under the MIT License.  -->
+<!--  Copyright (c) Files Community. Licensed under the MIT License.  -->
 <Page
 	x:Class="Files.App.Views.SplashScreenPage"
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -21,7 +21,7 @@
 				x:Name="SplashScreenImage"
 				ImageFailed="Image_ImageFailed"
 				ImageOpened="Image_ImageOpened"
-				Source="\Assets\AppTiles\Dev\SplashScreen.png" />
+				Source="{x:Bind SplashScreenImageSource, Mode=OneTime}" />
 		</Viewbox>
 
 		<!--  Branch Label  -->
@@ -33,7 +33,7 @@
 			FontSize="20"
 			Foreground="{ThemeResource TextFillColorTertiaryBrush}"
 			LineHeight="32">
-			<Run FontWeight="SemiBold" Text="VxFiles" />
+			<Run FontWeight="SemiBold" Text="{x:Bind AppName, Mode=OneTime}" />
 			<Run FontWeight="SemiLight" Text="{x:Bind BranchLabel, Mode=OneTime}" />
 		</TextBlock>
 

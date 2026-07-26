@@ -74,7 +74,7 @@
 			</wctcontrols:SettingsCard>
 
 			<!--  Open on Windows startup  -->
-			<StackPanel>
+			<StackPanel x:Name="StartupSettings" x:Load="{x:Bind ViewModel.SupportsPackageIntegrations}">
 				<!--  Startup disabled InfoBar  -->
 				<InfoBar
 					x:Name="OpenOnStartupInfoBar"
@@ -129,6 +129,7 @@
 			<!--  Replace File Explorer  -->
 			<wctcontrols:SettingsCard
 				x:Name="SetAsDefaultSettingsBlockControl"
+				x:Load="{x:Bind ViewModel.SupportsPackageIntegrations}"
 				Description="{helpers:ResourceString Name=SettingsSetAsDefaultFileManagerDescription}"
 				Header="{helpers:ResourceString Name=SettingsSetAsDefaultFileManager}">
 				<wctcontrols:SettingsCard.HeaderIcon>
@@ -146,7 +147,7 @@
 			<!--  Replace Open File Dialog  -->
 			<wctcontrols:SettingsCard
 				x:Name="ReplaceOpenFileDialogSetting"
-				x:Load="{x:Bind ViewModel.IsAppEnvironmentDev}"
+				x:Load="{x:Bind ViewModel.SupportsPackageIntegrations}"
 				Header="{helpers:ResourceString Name=SettingsSetAsOpenDialog}">
 				<wctcontrols:SettingsCard.HeaderIcon>
 					<FontIcon Glyph="&#xE8E5;" />

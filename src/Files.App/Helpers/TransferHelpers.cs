@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
@@ -51,7 +51,6 @@ namespace Files.App.Helpers
 				if (items.IsEmpty)
 					return;
 
-				dataPackage.Properties.PackageFamilyName = Windows.ApplicationModel.Package.Current.Id.FamilyName;
 				dataPackage.SetStorageItems(items, false);
 
 				Clipboard.SetContent(dataPackage);
@@ -140,7 +139,6 @@ namespace Files.App.Helpers
 				if (items.IsEmpty)
 					return;
 
-				dataPackage.Properties.PackageFamilyName = Windows.ApplicationModel.Package.Current.Id.FamilyName;
 				dataPackage.SetStorageItems(items, false);
 
 				Clipboard.SetContent(dataPackage);

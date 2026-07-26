@@ -1,4 +1,4 @@
-﻿// Copyright (c) Files Community
+// Copyright (c) Files Community
 // Licensed under the MIT License.
 
 using Microsoft.Extensions.Logging;
@@ -70,7 +70,6 @@ namespace Files.App.Actions
 						storageItem = standardItems.First();
 				}
 
-				dataPackage.Properties.PackageFamilyName = Windows.ApplicationModel.Package.Current.Id.FamilyName;
 				dataPackage.SetStorageItems(new[] { storageItem }, false);
 
 				Clipboard.SetContent(dataPackage);

@@ -9,7 +9,6 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.AppLifecycle;
 using Windows.Win32;
 using Windows.ApplicationModel;
-using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 
 namespace Files.App
@@ -22,6 +21,7 @@ namespace Files.App
 		public static SystemTrayIcon? SystemTrayIcon { get; private set; }
 
 		public static TaskCompletionSource? SplashScreenLoadingTCS { get; private set; }
+		internal static bool? SplashScreenImageLoaded { get; private set; }
 		public static string? OutputPath { get; set; }
 
 		private static CommandBarFlyout? _LastOpenedFlyout;
@@ -111,6 +111,8 @@ namespace Files.App
 				FileTagsManager = Ioc.Default.GetRequiredService<FileTagsManager>();
 				LibraryManager = Ioc.Default.GetRequiredService<LibraryManager>();
 				Logger = Ioc.Default.GetRequiredService<ILogger<App>>();
+				if (SplashScreenImageLoaded is bool splashScreenImageLoaded)
+					LogSplashScreenImageResult(splashScreenImageLoaded);
 				AppModel = Ioc.Default.GetRequiredService<AppModel>();
 
 				// Hook events for the window
@@ -119,28 +121,22 @@ namespace Files.App
 
 				Logger.LogInformation($"App launched. Launch args type: {appActivationArguments.Data.GetType().Name}");
 
+				SystemTrayIcon = new SystemTrayIcon();
+				if (userSettingsService.GeneralSettingsService.ShowSystemTrayIcon)
+					SystemTrayIcon.Show();
+
 				if (!(isStartupTask && isLeaveAppRunning))
 				{
 					// Wait for the UI to update
 					await SplashScreenLoadingTCS!.Task.WithTimeoutAsync(TimeSpan.FromMilliseconds(500));
 					SplashScreenLoadingTCS = null;
 
-					// Create a system tray icon
-					SystemTrayIcon = new SystemTrayIcon();
-					if (userSettingsService.GeneralSettingsService.ShowSystemTrayIcon)
-						SystemTrayIcon.Show();
-
-					_ = MainWindow.Instance.InitializeApplicationAsync(appActivationArguments.Data);
+					await MainWindow.Instance.InitializeApplicationAsync(appActivationArguments.Data);
 				}
 				else
 				{
-					// Create a system tray icon
-					SystemTrayIcon = new SystemTrayIcon();
-					if (userSettingsService.GeneralSettingsService.ShowSystemTrayIcon)
-						SystemTrayIcon.Show();
-
 					// Sleep current instance
-					Program.Pool = new(0, 1, $"Files-{AppLifecycleHelper.AppEnvironment}-Instance");
+					Program.Pool = new(0, 1, VxFilesEnvironment.InstanceSemaphoreName);
 
 					Thread.Yield();
 
@@ -154,6 +150,21 @@ namespace Files.App
 
 				await AppLifecycleHelper.InitializeAppComponentsAsync();
 			}
+		}
+
+		internal static void SetSplashScreenImageResult(bool isLoaded)
+		{
+			SplashScreenImageLoaded = isLoaded;
+			LogSplashScreenImageResult(isLoaded);
+		}
+
+		private static void LogSplashScreenImageResult(bool isLoaded)
+		{
+			var message = $"Splash image {(isLoaded ? "loaded" : "failed to load")} for process {Environment.ProcessId}.";
+			if (isLoaded)
+				Logger.LogInformation(message);
+			else
+				Logger.LogError(message);
 		}
 
 		/// <summary>
@@ -185,7 +196,7 @@ namespace Files.App
 				args.WindowActivationState != WindowActivationState.PointerActivated)
 				return;
 
-			ApplicationData.Current.LocalSettings.Values["INSTANCE_ACTIVE"] = -Environment.ProcessId;
+			VxFilesEnvironment.SetActiveInstanceProcessId(-Environment.ProcessId);
 		}
 
 		/// <summary>
@@ -256,7 +267,7 @@ namespace Files.App
 				await FilePropertiesHelpers.WaitClosingAll();
 
 				// Sleep current instance
-				Program.Pool = new(0, 1, $"Files-{AppLifecycleHelper.AppEnvironment}-Instance");
+				Program.Pool = new(0, 1, VxFilesEnvironment.InstanceSemaphoreName);
 
 				Thread.Yield();
 
@@ -293,18 +304,6 @@ namespace Files.App
 
 			// Method can take a long time, make sure the window is hidden
 			await Task.Yield();
-
-			// Try to maintain clipboard data after app close
-			SafetyExtensions.IgnoreExceptions(() =>
-			{
-				var dataPackage = Clipboard.GetContent();
-				if (dataPackage.Properties.PackageFamilyName == Package.Current.Id.FamilyName)
-				{
-					if (dataPackage.Contains(StandardDataFormats.StorageItems))
-						Clipboard.Flush();
-				}
-			},
-			Logger);
 
 			// Destroy cached properties windows
 			FilePropertiesHelpers.DestroyCachedWindows();

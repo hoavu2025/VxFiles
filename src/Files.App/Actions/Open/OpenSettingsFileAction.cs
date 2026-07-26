@@ -1,4 +1,4 @@
-﻿// Copyright (c) Files Community
+// Copyright (c) Files Community
 // SPDX-License-Identifier: MPL-2.0
 
 using Microsoft.UI.Xaml.Controls;
@@ -31,7 +31,10 @@ namespace Files.App.Actions
 		{
 			try
 			{
-				var settingsJsonFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appdata:///local/{Constants.LocalSettings.SettingsFolderName}/{Constants.LocalSettings.UserSettingsFileName}"));
+				var settingsJsonFile = await StorageFile.GetFileFromPathAsync(SystemIO.Path.Combine(
+					VxFilesEnvironment.LocalDataPath,
+					Constants.LocalSettings.SettingsFolderName,
+					Constants.LocalSettings.UserSettingsFileName));
 				if (!await Launcher.LaunchFileAsync(settingsJsonFile))
 					await ContextMenu.InvokeVerb("open", settingsJsonFile.Path);
 			}

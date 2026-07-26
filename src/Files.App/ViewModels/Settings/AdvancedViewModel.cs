@@ -55,10 +55,10 @@ namespace Files.App.ViewModels.Settings
 			if (IsSetAsDefaultFileManager == DetectIsSetAsDefaultFileManager())
 				return;
 
-			var destFolder = Path.Combine(ApplicationData.Current.LocalFolder.Path, "FilesOpenDialog");
+			var destFolder = Path.Combine(VxFilesEnvironment.LocalDataPath, "FilesOpenDialog");
 			Directory.CreateDirectory(destFolder);
 
-			foreach (var file in Directory.GetFiles(Path.Combine(Package.Current.InstalledLocation.Path, "Assets", "FilesOpenDialog")))
+			foreach (var file in Directory.GetFiles(Path.Combine(VxFilesEnvironment.InstallPath, "Assets", "FilesOpenDialog")))
 			{
 				if (!SafetyExtensions.IgnoreExceptions(() => File.Copy(file, Path.Combine(destFolder, Path.GetFileName(file)), true), App.Logger))
 				{
@@ -116,9 +116,9 @@ namespace Files.App.ViewModels.Settings
 			if (IsSetAsOpenFileDialog == DetectIsSetAsOpenFileDialog())
 				return;
 
-			var destFolder = Path.Combine(ApplicationData.Current.LocalFolder.Path, "FilesOpenDialog");
+			var destFolder = Path.Combine(VxFilesEnvironment.LocalDataPath, "FilesOpenDialog");
 			Directory.CreateDirectory(destFolder);
-			foreach (var file in Directory.GetFiles(Path.Combine(Package.Current.InstalledLocation.Path, "Assets", "FilesOpenDialog")))
+			foreach (var file in Directory.GetFiles(Path.Combine(VxFilesEnvironment.InstallPath, "Assets", "FilesOpenDialog")))
 			{
 				if (!SafetyExtensions.IgnoreExceptions(() => File.Copy(file, Path.Combine(destFolder, Path.GetFileName(file)), true), App.Logger))
 				{
@@ -165,7 +165,7 @@ namespace Files.App.ViewModels.Settings
 				if (zipFolder is null)
 					return;
 
-				var localFolderPath = ApplicationData.Current.LocalFolder.Path;
+				var localFolderPath = VxFilesEnvironment.LocalDataPath;
 				var settingsFolder = await StorageFolder.GetFolderFromPathAsync(Path.Combine(localFolderPath, Constants.LocalSettings.SettingsFolderName));
 
 				// Import user settings
@@ -227,7 +227,7 @@ namespace Files.App.ViewModels.Settings
 				if (zipFolder is null)
 					return;
 
-				var localFolderPath = ApplicationData.Current.LocalFolder.Path;
+				var localFolderPath = VxFilesEnvironment.LocalDataPath;
 
 				// Export user settings
 				var exportSettings = UTF8Encoding.UTF8.GetBytes((string)UserSettingsService.ExportSettings());
@@ -288,6 +288,8 @@ namespace Files.App.ViewModels.Settings
 		{
 			get => AppLifecycleHelper.AppEnvironment is AppEnvironment.Dev;
 		}
+
+		public bool SupportsPackageIntegrations => VxFilesEnvironment.SupportsWindowsIntegration;
 
 		private FileSavePicker InitializeWithWindow(FileSavePicker obj)
 		{

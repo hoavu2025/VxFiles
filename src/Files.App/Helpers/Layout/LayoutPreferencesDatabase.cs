@@ -1,4 +1,4 @@
-﻿// Copyright (c) Files Community
+// Copyright (c) Files Community
 // Licensed under the MIT License.
 
 using Microsoft.Win32;
@@ -12,7 +12,7 @@ namespace Files.App.Helpers
 {
 	public sealed class LayoutPreferencesDatabase
 	{
-		private readonly static string LayoutSettingsKey = @$"Software\Files Community\{Package.Current.Id.Name}\v1\LayoutPreferences";
+		private readonly static string LayoutSettingsKey = @$"Software\Files Community\{VxFilesEnvironment.DisplayName}\v1\LayoutPreferences";
 
 		public LayoutPreferencesItem? GetPreferences(string filePath, ulong? frn)
 		{
