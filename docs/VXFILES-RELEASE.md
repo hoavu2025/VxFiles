@@ -8,7 +8,30 @@ There is no portable ZIP, MSIX, PFX, certificate trust step, Microsoft Store sub
 
 The internal Velopack package ID is `VxFilesApp`, so the install root is `%LocalAppData%\VxFilesApp`. The visible product and installer names remain VxFiles. Application data is stored separately under `%LocalAppData%\VxFiles Community\VxFiles`; the legacy `%LocalAppData%\VxFiles` data directory is not touched.
 
-## Build a release
+## Publish with GitHub CLI
+
+The recommended release path is a local PowerShell script that uses GitHub CLI. It does not use GitHub Actions. Before running it, install `gh`, authenticate with `gh auth login`, and commit every change on `main`.
+
+To build, upload, verify, and publish version 2.0.2:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+  -File .\scripts\release\Publish-VxFilesGitHubRelease.ps1 `
+  -Version 2.0.2
+```
+
+Optionally provide Markdown release notes:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+  -File .\scripts\release\Publish-VxFilesGitHubRelease.ps1 `
+  -Version 2.0.2 `
+  -ReleaseNotes .\release-notes\2.0.2.md
+```
+
+The script requires a clean `main` branch, verifies GitHub authentication and version immutability, pushes `main`, builds the self-contained x64 release, and uploads all five Velopack files to a draft GitHub release. It verifies each draft asset's name, upload state, and size before making the stable release public. If verification fails, the release remains a draft.
+
+## Build without publishing
 
 Choose a version that has never been published. Existing Git tags and releases are immutable; do not replace the earlier MSIX `v2.0.0` release.
 
@@ -17,7 +40,7 @@ From a PowerShell prompt:
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass `
   -File .\scripts\release\Build-VxFilesRelease.ps1 `
-  -Version 2.0.1
+  -Version 2.0.2
 ```
 
 Optionally attach Markdown release notes to Velopack metadata:
@@ -25,8 +48,8 @@ Optionally attach Markdown release notes to Velopack metadata:
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass `
   -File .\scripts\release\Build-VxFilesRelease.ps1 `
-  -Version 2.0.1 `
-  -ReleaseNotes .\release-notes\2.0.1.md
+  -Version 2.0.2 `
+  -ReleaseNotes .\release-notes\2.0.2.md
 ```
 
 The script restores and publishes the app as self-contained x64, installs the pinned Velopack CLI locally under the ignored `artifacts` directory if needed, and writes the release to `artifacts\releases\<version>\release`.
@@ -46,7 +69,7 @@ Before publishing:
 
 The first unsigned launch may show SmartScreen. That warning is different from administrator elevation and certificate trust.
 
-## Publish manually to GitHub
+## Publish manually without the script
 
 Create a new GitHub release in `hoavu2025/VxFiles` with:
 
