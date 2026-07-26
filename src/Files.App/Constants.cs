@@ -193,15 +193,15 @@ namespace Files.App
 
 		public static class ExternalUrl
 		{
-			public const string GitHubRepoUrl = @"https://github.com/files-community/Files";
+			public const string GitHubRepoUrl = @"https://github.com/hoavu2025/VxFiles";
 			public const string DocumentationUrl = @"https://files.community/docs";
 			public const string DiscordUrl = @"https://discord.gg/files";
-			public const string FeatureRequestUrl = @"https://discord.gg/files";
-			public const string BugReportUrl = @"https://github.com/files-community/Files/issues/new?labels=bug&template=bug_report.yml";
+			public const string FeatureRequestUrl = @"https://github.com/hoavu2025/VxFiles/issues/new";
+			public const string BugReportUrl = @"https://github.com/hoavu2025/VxFiles/issues/new?labels=bug&template=bug_report.yml";
 			public const string PrivacyPolicyUrl = @"https://files.community/privacy";
-			public const string SupportUsUrl = @"https://github.com/files-community/Files?sponsor";
+			public const string SupportUsUrl = @"https://github.com/hoavu2025/VxFiles";
 			public const string CrowdinUrl = @"https://crowdin.com/project/files-app";
-			public static readonly string ReleaseNotesUrl = $"https://files.community/blog/posts/v{Package.Current.Id.Version.Major}-{Package.Current.Id.Version.Minor}-{Package.Current.Id.Version.Build}?minimal";
+			public static readonly string ReleaseNotesUrl = $"https://github.com/hoavu2025/VxFiles/releases/tag/v{Package.Current.Id.Version.Major}.{Package.Current.Id.Version.Minor}.{Package.Current.Id.Version.Build}";
 		}
 
 		public static class DocsPath
@@ -281,8 +281,8 @@ namespace Files.App
 		{
 			// These strings are intentionally hardcoded and cannot be moved to resource files.
 			// The Windows App Runtime (which powers the resource loading system) may itself be unavailable at this point
-			public const string MissingRuntimeMessage = "Files failed to start. A required Windows component could not be loaded. Try reinstalling Files from the Microsoft Store or from https://files.community/download";
-			public const string MissingRuntimeTitle = "Files - Startup Error";
+			public const string MissingRuntimeMessage = "VxFiles failed to start. A required Windows component could not be loaded. Try reinstalling VxFiles from https://github.com/hoavu2025/VxFiles/releases/latest";
+			public const string MissingRuntimeTitle = "VxFiles - Startup Error";
 		}
 	}
 }

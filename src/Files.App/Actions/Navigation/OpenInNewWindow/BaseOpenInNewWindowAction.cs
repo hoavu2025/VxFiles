@@ -53,7 +53,7 @@ namespace Files.App.Actions
 			foreach (ListedItem listedItem in items)
 			{
 				var selectedItemPath = (listedItem as IShortcutItem)?.TargetPath ?? listedItem.ItemPath;
-				var folderUri = new Uri($"files-dev:?folder={@selectedItemPath}");
+				var folderUri = new Uri($"vxfiles:?folder={@selectedItemPath}");
 
 				await Launcher.LaunchUriAsync(folderUri);
 			}

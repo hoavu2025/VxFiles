@@ -94,7 +94,7 @@ namespace Files.App
 				}
 			}
 
-			var processes = Process.GetProcessesByName("Files")
+			var processes = Process.GetProcessesByName("VxFiles")
 				.Where(ProcessPathPredicate)
 				.Where(p => p.Id != Environment.ProcessId);
 
@@ -257,8 +257,8 @@ namespace Files.App
 			var cmdLaunchArgs = activatedArgs.Data is ILaunchActivatedEventArgs launchArgs &&
 				launchArgs.Arguments is not null &&
 				CommandLineParser.SplitArguments(launchArgs.Arguments, true).FirstOrDefault() is string arg0 &&
-				(arg0.EndsWith($"files-dev.exe", StringComparison.OrdinalIgnoreCase) ||
-				arg0.EndsWith($"files-dev", StringComparison.OrdinalIgnoreCase)) ? launchArgs.Arguments : null;
+				(arg0.EndsWith($"vxfiles.exe", StringComparison.OrdinalIgnoreCase) ||
+				arg0.EndsWith($"vxfiles", StringComparison.OrdinalIgnoreCase)) ? launchArgs.Arguments : null;
 			var cmdProtocolArgs = activatedArgs.Data is IProtocolActivatedEventArgs protocolArgs &&
 				protocolArgs.Uri.Query.TrimStart('?').Split('=') is string[] parsedArgs &&
 				parsedArgs.Length == 2 && parsedArgs[0] == "cmd" ? Uri.UnescapeDataString(parsedArgs[1]) : null;
