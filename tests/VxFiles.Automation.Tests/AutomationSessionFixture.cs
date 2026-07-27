@@ -66,17 +66,17 @@ internal sealed class AutomationFixture : IDisposable
 			CopyDirectory(pinnedRuntime, runtime);
 		}
 
-		var executable = Path.Join(runtime, "Python", "python.exe");
+		var executable = PinnedRuntime.GetPythonExecutablePath(runtime);
 		return new(
 			root,
 			new(
 				[packages],
 				Path.Join(root, "state"),
 				Path.Join(root, "temp"),
-				runtime,
-				executable,
-				PinnedAutomationPython.Version,
-				Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(executable))),
+				new PinnedRuntime(
+					runtime,
+					PinnedAutomationPython.Version,
+					Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(executable)))),
 				new Version(2, 1, 0),
 				"en-US"));
 	}
@@ -115,7 +115,7 @@ internal sealed class AutomationFixture : IDisposable
 	/// <summary>
 	/// The runtime tree package trust covers: the runner scripts, with the interpreter beneath them.
 	/// </summary>
-	public string RuntimeDirectory => Options.RuntimeRoot;
+	public string RuntimeDirectory => Options.Runtime.Root;
 
 	public AutomationInvocation Invocation(
 		IAutomationSession session,

@@ -20,24 +20,29 @@ internal static class PinnedAutomationPython
 	public static string RuntimeRoot
 		=> Path.GetFullPath(Path.Join(AppContext.BaseDirectory, "AutomationRuntime"));
 
-	public static string ExecutablePath
-		=> Path.Join(RuntimeRoot, "Python", "python.exe");
+	/// <summary>
+	/// The only runtime a session opened by this app is allowed to use.
+	/// </summary>
+	public static PinnedRuntime Pinned => new(RuntimeRoot, Version, ExecutableSha256);
+
+	public static string ExecutablePath => Pinned.PythonExecutablePath;
 
 	public static void Validate(AutomationModuleOptions options)
 	{
-		if (options.PythonVersion != Version ||
-			!string.Equals(options.PythonSha256, ExecutableSha256, StringComparison.OrdinalIgnoreCase) ||
-			!string.Equals(Path.GetFullPath(options.RuntimeRoot), RuntimeRoot, StringComparison.OrdinalIgnoreCase) ||
-			!string.Equals(Path.GetFullPath(options.PythonExecutablePath), ExecutablePath, StringComparison.OrdinalIgnoreCase))
+		var pinned = Pinned;
+		var runtime = options.Runtime;
+		if (runtime.PythonVersion != pinned.PythonVersion ||
+			!string.Equals(runtime.PythonSha256, pinned.PythonSha256, StringComparison.OrdinalIgnoreCase) ||
+			!string.Equals(Path.GetFullPath(runtime.Root), pinned.Root, StringComparison.OrdinalIgnoreCase))
 		{
 			throw new InvalidOperationException($"Automation must use the packaged CPython {Version} runtime pinned by VxFiles.");
 		}
 
-		if (!File.Exists(ExecutablePath))
+		if (!File.Exists(pinned.PythonExecutablePath))
 		{
 			throw new FileNotFoundException(
 				$"The packaged CPython {Version} runtime is missing. Run scripts/automation/Acquire-Python.ps1.",
-				ExecutablePath);
+				pinned.PythonExecutablePath);
 		}
 	}
 }

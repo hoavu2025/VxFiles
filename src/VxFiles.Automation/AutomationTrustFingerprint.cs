@@ -29,7 +29,7 @@ internal static class AutomationTrustFingerprint
 		// and every action, so a change to it must renew trust exactly as a change to python.exe does. Actions
 		// launch with -B so importing the runner cannot drop a __pycache__ in here and move this fingerprint on
 		// its own; that flag is load-bearing for trust, not a tidiness measure.
-		var runnerFingerprint = FingerprintTree(options.RuntimeRoot, canonicalizeManifest: false);
+		var runnerFingerprint = FingerprintTree(options.Runtime.Root, canonicalizeManifest: false);
 		using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
 		AppendRecord(hash, "manifest", CanonicalizeJson(package.ManifestBytes));
 		AppendRecord(hash, "package", Encoding.UTF8.GetBytes(FingerprintTree(package.PackagePath, canonicalizeManifest: true)));

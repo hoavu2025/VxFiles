@@ -665,7 +665,7 @@ public sealed class AutomationSessionTests
 			("convert.py", "pass"));
 
 		var exception = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => AutomationModule.OpenAsync(
-			fixture.Options with { PythonSha256 = new string('0', 64) },
+			fixture.Options with { Runtime = fixture.Options.Runtime with { PythonSha256 = new string('0', 64) } },
 			new MemoryStateStore(),
 			new AcceptingTrustConsent(),
 			new RecordingResultRouter()).AsTask());

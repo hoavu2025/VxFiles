@@ -270,10 +270,9 @@ internal static class AutomationPythonRunner
 		string cancellationEventName,
 		string startEventName)
 	{
-		var bootstrapPath = Path.Join(options.RuntimeRoot, "vxfiles_runner.py");
 		var startInfo = new ProcessStartInfo
 		{
-			FileName = options.PythonExecutablePath,
+			FileName = options.Runtime.PythonExecutablePath,
 			WorkingDirectory = package.PackagePath,
 			UseShellExecute = false,
 			CreateNoWindow = true,
@@ -298,7 +297,7 @@ internal static class AutomationPythonRunner
 		// tree, because both are covered by the trust fingerprint and a run that mutates them makes the next run
 		// prompt for trust again.
 		startInfo.ArgumentList.Add("-B");
-		startInfo.ArgumentList.Add(bootstrapPath);
+		startInfo.ArgumentList.Add(options.Runtime.BootstrapPath);
 		startInfo.ArgumentList.Add(action.EntryPointPath);
 		startInfo.ArgumentList.Add(package.PackagePath);
 		if (action.InputMode is AutomationInputMode.ArgvPaths)
@@ -515,10 +514,11 @@ internal static class AutomationPythonRunner
 
 	private static void VerifyPinnedPython(AutomationModuleOptions options)
 	{
-		var expected = options.PythonSha256.StartsWith("sha256:", StringComparison.OrdinalIgnoreCase)
-			? options.PythonSha256[7..]
-			: options.PythonSha256;
-		var actual = Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(options.PythonExecutablePath)));
+		var pinnedSha256 = options.Runtime.PythonSha256;
+		var expected = pinnedSha256.StartsWith("sha256:", StringComparison.OrdinalIgnoreCase)
+			? pinnedSha256[7..]
+			: pinnedSha256;
+		var actual = Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(options.Runtime.PythonExecutablePath)));
 		if (!string.Equals(actual, expected, StringComparison.OrdinalIgnoreCase))
 			throw new InvalidOperationException("The app-local Python executable does not match its pinned SHA-256.");
 	}

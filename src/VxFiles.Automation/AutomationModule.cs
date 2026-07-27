@@ -20,10 +20,7 @@ public static class AutomationModule
 			packageRoots,
 			stateRoot,
 			temporaryRoot,
-			PinnedAutomationPython.RuntimeRoot,
-			PinnedAutomationPython.ExecutablePath,
-			PinnedAutomationPython.Version,
-			PinnedAutomationPython.ExecutableSha256,
+			PinnedAutomationPython.Pinned,
 			hostVersion,
 			hostLocale);
 
