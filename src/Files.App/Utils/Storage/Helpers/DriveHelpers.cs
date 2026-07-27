@@ -29,8 +29,8 @@ namespace Files.App.Utils.Storage
 				return false;
 
 			var ejectButton = await DialogDisplayHelper.ShowDialogAsync(
-				Strings.InsertDiscDialog_Title.GetLocalizedResource(),
-				string.Format(Strings.InsertDiscDialog_Text.GetLocalizedResource(), matchingDrive.Path),
+				Strings.InsertDiscDialogTitle.GetLocalizedResource(),
+				string.Format(Strings.InsertDiscDialogText.GetLocalizedResource(), matchingDrive.Path),
 				Strings.InsertDiscDialog_OpenDriveButton.GetLocalizedResource(),
 				Strings.Close.GetLocalizedResource());
 			if (ejectButton)
@@ -91,6 +91,27 @@ namespace Files.App.Utils.Storage
 			}
 			// It's ok to return null here, on normal drives StorageFolder.GetFolderFromPathAsync works
 			return null;
+		}
+
+		public static bool IsMtpPath(string path)
+		{
+			return path.StartsWith(@"\\?\", StringComparison.Ordinal);
+		}
+
+		public static bool IsNetworkPath(string path)
+		{
+			if (IsMtpPath(path))
+				return false;
+
+			try
+			{
+				return path.StartsWith(@"\\", StringComparison.Ordinal) ||
+					GetDriveType(new SystemIO.DriveInfo(path)) is Data.Items.DriveType.Network;
+			}
+			catch
+			{
+				return false;
+			}
 		}
 
 		public static Data.Items.DriveType GetDriveType(System.IO.DriveInfo drive)
