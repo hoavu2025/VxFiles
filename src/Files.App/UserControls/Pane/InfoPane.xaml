@@ -176,6 +176,12 @@
 				Content="{helpers:ResourceString Name=Preview}"
 				IsChecked="{x:Bind ViewModel.SelectedTab, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Preview, Mode=OneWay}"
 				Style="{StaticResource Local.RadioButtonStyle}" />
+			<!--  Tools  -->
+			<RadioButton
+				Command="{x:Bind Commands.ToggleToolsPane, Mode=OneWay}"
+				Content="{helpers:ResourceString Name=Tools}"
+				IsChecked="{x:Bind ViewModel.SelectedTab, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Tools, Mode=OneWay}"
+				Style="{StaticResource Local.RadioButtonStyle}" />
 		</StackPanel>
 
 		<Grid
@@ -491,6 +497,20 @@
 			</StackPanel>
 		</ScrollViewer>
 
+		<!--
+			Tools. The host is always present so the visual states below can target it, while the pane itself is
+			created the first time Tools is selected. That deferral is what keeps Automation discovery lazy.
+		-->
+		<Grid
+			x:Name="ToolsPaneHost"
+			Grid.Row="1"
+			Grid.RowSpan="2"
+			Grid.Column="0"
+			Grid.ColumnSpan="2"
+			Visibility="Collapsed">
+			<usercontrols:AutomationToolsPane x:Name="ToolsPane" x:Load="{x:Bind ViewModel.SelectedTab, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Tools, Mode=OneWay}" />
+		</Grid>
+
 		<VisualStateManager.VisualStateGroups>
 			<VisualStateGroup>
 				<VisualState x:Name="NoItemSelected">
@@ -578,6 +598,8 @@
 					</VisualState.StateTriggers>
 					<VisualState.Setters>
 						<Setter Target="RootPropertiesScrollViewer.Visibility" Value="Visible" />
+						<Setter Target="RootPreviewGrid.Visibility" Value="Visible" />
+						<Setter Target="ToolsPaneHost.Visibility" Value="Collapsed" />
 						<Setter Target="PropertiesRow.Height" Value="3*" />
 						<Setter Target="PropertiesColumn.Width" Value="3*" />
 					</VisualState.Setters>
@@ -588,6 +610,20 @@
 					</VisualState.StateTriggers>
 					<VisualState.Setters>
 						<Setter Target="RootPropertiesScrollViewer.Visibility" Value="Collapsed" />
+						<Setter Target="RootPreviewGrid.Visibility" Value="Visible" />
+						<Setter Target="ToolsPaneHost.Visibility" Value="Collapsed" />
+						<Setter Target="PropertiesRow.Height" Value="0" />
+						<Setter Target="PropertiesColumn.Width" Value="0" />
+					</VisualState.Setters>
+				</VisualState>
+				<VisualState>
+					<VisualState.StateTriggers>
+						<triggers:IsEqualStateTrigger Value="{x:Bind ViewModel.SelectedTab, Mode=OneWay}" To="Tools" />
+					</VisualState.StateTriggers>
+					<VisualState.Setters>
+						<Setter Target="RootPropertiesScrollViewer.Visibility" Value="Collapsed" />
+						<Setter Target="RootPreviewGrid.Visibility" Value="Collapsed" />
+						<Setter Target="ToolsPaneHost.Visibility" Value="Visible" />
 						<Setter Target="PropertiesRow.Height" Value="0" />
 						<Setter Target="PropertiesColumn.Width" Value="0" />
 					</VisualState.Setters>

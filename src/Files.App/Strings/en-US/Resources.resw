@@ -4635,4 +4635,58 @@
   <data name="ConfirmRemoveTagsDialogContent" xml:space="preserve">
     <value>Are you sure you want to remove tags from the selected items?</value>
   </data>
+  <data name="Tools" xml:space="preserve">
+    <value>Tools</value>
+  </data>
+  <data name="ToggleToolsPane" xml:space="preserve">
+    <value>Toggle the tools pane</value>
+  </data>
+  <data name="ToggleToolsPaneDescription" xml:space="preserve">
+    <value>Toggle the tools pane to browse installed automation packages</value>
+  </data>
+  <data name="AutomationToolsTree/AutomationProperties/Name" xml:space="preserve">
+    <value>Automation packages and actions</value>
+  </data>
+  <data name="AutomationToolsFilter/PlaceholderText" xml:space="preserve">
+    <value>Filter packages and actions</value>
+  </data>
+  <data name="AutomationToolsFilter/AutomationProperties/Name" xml:space="preserve">
+    <value>Filter automation packages and actions</value>
+  </data>
+  <data name="AutomationToolsOpenPackagesFolder" xml:space="preserve">
+    <value>Open packages folder</value>
+  </data>
+  <data name="AutomationToolsOpenPackagesFolderDescription" xml:space="preserve">
+    <value>Install a package by copying its folder here, then reopen this tab</value>
+  </data>
+  <data name="AutomationToolsLoading" xml:space="preserve">
+    <value>Looking for automation packages…</value>
+  </data>
+  <data name="AutomationToolsEmpty" xml:space="preserve">
+    <value>No automation packages are installed</value>
+  </data>
+  <data name="AutomationToolsNoMatches" xml:space="preserve">
+    <value>No package or action matches this filter</value>
+  </data>
+  <data name="AutomationToolsUnavailable" xml:space="preserve">
+    <value>Automation is unavailable</value>
+  </data>
+  <data name="AutomationAvailabilityAvailable" xml:space="preserve">
+    <value>Available</value>
+  </data>
+  <data name="AutomationAvailabilityDisabled" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="AutomationAvailabilityMissingDependency" xml:space="preserve">
+    <value>Missing dependency</value>
+  </data>
+  <data name="AutomationToolsActionsAvailable" xml:space="preserve">
+    <value>{0} of {1} actions available</value>
+  </data>
+  <data name="AutomationToolsRun" xml:space="preserve">
+    <value>Run</value>
+  </data>
+  <data name="AutomationToolsRunNotYetAvailable" xml:space="preserve">
+    <value>Running automation actions is not available yet</value>
+  </data>
 </root>

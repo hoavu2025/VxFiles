@@ -17,5 +17,10 @@ namespace Files.App.Data.Enums
 		/// Preview tab.
 		/// </summary>
 		Preview,
+
+		/// <summary>
+		/// Tools tab, listing Automation Packages and their Automation Actions.
+		/// </summary>
+		Tools,
 	}
 }

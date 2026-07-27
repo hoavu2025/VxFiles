@@ -51,6 +51,17 @@ Do not reintroduce direct `ApplicationData.Current` or `Package.Current` access 
 
 `Files.App` references `VxFiles.Automation` and imports `AutomationPayload.props` without setting `AutomationPayloadOwner`. The reference carries the Automation payload into publish; the import exists so the pinned-runtime publish guard runs in the project that publishes. Dropping either one silently produces a release that cannot run Automation Actions, and setting `AutomationPayloadOwner` in both projects gives one publish path two sources.
 
+## Automation Tools host seam
+
+The Info Pane is where VxFiles-owned automation meets inherited Files code, so upstream changes to `InfoPane.xaml` conflict here. Preserve:
+
+- `InfoPaneTabs.Tools` as the third enum member, its `ToggleToolsPaneAction`, and the third tab selector in `InfoPane.xaml`. Upstream has two tabs; a merge that restores the upstream enum silently drops the tab and resets everyone's persisted selection to Details.
+- the `ToolsPaneHost` grid and its three `SelectedTab` visual states. The host is always present so the states can target it, while `AutomationToolsPane` uses `x:Load` so the headless session is opened only when Tools is first selected.
+- `AutomationToolsPane` and `AutomationToolsViewModel` as the only Tools code. `InfoPaneViewModel` stays responsible for Details and Preview alone, so automation refreshes cannot interfere with preview loading.
+- `IAutomationSessionService` as the single owner of the process-wide `IAutomationSession`, including the bundled and user package roots it derives from `VxFilesEnvironment`.
+
+Automation package discovery, validation, and filtering stay in `VxFiles.Automation` and `VxFiles.Automation.Abstractions`. Do not move any of it into `Files.App` to resolve a conflict.
+
 ## Branding and fork ownership
 
 Preserve:
@@ -93,7 +104,7 @@ V1 deliberately omits or disables:
 - packaged clipboard package-family metadata;
 - packaged launcher replacement and default-file-manager registration;
 - package-dependent shell integration shown on Advanced settings;
-- Automation Actions.
+- running Automation Actions. The Tools tab discovers and diagnoses packages, but every Run button is disabled until invocation lands.
 
 When upstream changes one of these areas, merge the source when harmless but keep its entry point hidden, disabled, guarded, or excluded from the V1 build until an unpackaged implementation is explicitly approved.
 
