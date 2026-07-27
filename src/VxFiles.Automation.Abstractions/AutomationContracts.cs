@@ -94,6 +94,7 @@ public enum AutomationAvailability
 {
 	Available,
 	Disabled,
+	MissingDependency,
 }
 
 public sealed record AutomationActionSnapshot(

@@ -164,7 +164,7 @@ public sealed class AutomationPackageCatalogTests
 			[firstRoot.Path, secondRoot.Path],
 			new Version(2, 1, 0),
 			new Version(3, 14));
-		var snapshot = AutomationManifestCatalog.Discover(options);
+		var snapshot = AutomationManifestCatalog.Discover(options).Snapshot;
 
 		Assert.AreEqual(2, snapshot.Packages.Length);
 		Assert.IsTrue(snapshot.Packages.All(package => package.Availability is AutomationAvailability.Disabled));
@@ -351,7 +351,7 @@ public sealed class AutomationPackageCatalogTests
 			[packages.Path],
 			new Version(2, 1, 0),
 			new Version(3, 14));
-		return AutomationManifestCatalog.Discover(options);
+		return AutomationManifestCatalog.Discover(options).Snapshot;
 	}
 
 	private static string Manifest(string packageId, params string[] actions)

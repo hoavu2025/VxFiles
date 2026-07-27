@@ -6,9 +6,16 @@ using VxFiles.Automation.Abstractions;
 
 namespace VxFiles.Automation;
 
+/// <summary>
+/// A discovery result: what host surfaces display, plus the packages that are actually runnable.
+/// </summary>
+internal sealed record AutomationCatalog(
+	AutomationCatalogSnapshot Snapshot,
+	ImmutableDictionary<AutomationPackageId, AutomationPackageDefinition> Packages);
+
 internal static class AutomationManifestCatalog
 {
-	public static AutomationCatalogSnapshot Discover(AutomationCatalogOptions options)
+	public static AutomationCatalog Discover(AutomationCatalogOptions options)
 	{
 		var discovered = GetPackagePaths(options.PackageRoots)
 			.Select(packagePath => DiscoverPackage(packagePath, options))
@@ -16,11 +23,17 @@ internal static class AutomationManifestCatalog
 
 		DisableDuplicatePackageIds(discovered);
 
-		return new(discovered
+		var snapshot = new AutomationCatalogSnapshot(discovered
 			.Select(package => package.Snapshot)
 			.OrderBy(package => package.DisplayName, StringComparer.CurrentCultureIgnoreCase)
 			.ThenBy(package => package.Id.Value, StringComparer.Ordinal)
 			.ToImmutableArray());
+
+		var runnable = discovered
+			.Where(package => package.Definition is not null)
+			.ToImmutableDictionary(package => package.Snapshot.Id, package => package.Definition!);
+
+		return new(snapshot, runnable);
 	}
 
 	private static IEnumerable<string> GetPackagePaths(ImmutableArray<string> packageRoots)
@@ -51,20 +64,11 @@ internal static class AutomationManifestCatalog
 			RejectReparsePoints(packagePath);
 			return AutomationManifestValidator.Validate(packagePath, options);
 		}
-		catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or AutomationPackageValidationException)
+		catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or AutomationValidationException)
 		{
 			var folderName = Path.GetFileName(packagePath);
-			var snapshot = new AutomationPackageSnapshot(
-				AutomationFallbackIds.FromFolderName(folderName),
-				string.Empty,
-				folderName,
-				exception.Message,
-				string.Empty,
-				null,
-				AutomationAvailability.Disabled,
-				[exception.Message],
-				[]);
-			return new(snapshot, false);
+			var metadata = new AutomationPackageMetadata(AutomationFallbackIds.FromFolderName(folderName), folderName);
+			return new(AutomationSnapshotMapping.DisabledPackage(metadata, exception.Message), false, null);
 		}
 	}
 
@@ -92,6 +96,7 @@ internal static class AutomationManifestCatalog
 					Diagnostics = [diagnostic],
 					Actions = [],
 				},
+				Definition = null,
 			};
 		}
 	}
@@ -103,20 +108,16 @@ internal static class AutomationManifestCatalog
 		while (pendingDirectories.TryPop(out var directory))
 		{
 			if ((File.GetAttributes(directory) & FileAttributes.ReparsePoint) is not 0)
-				throw new AutomationPackageValidationException("Automation Packages cannot contain reparse points.");
+				throw AutomationValidationException.Package("Automation Packages cannot contain reparse points.");
 
 			foreach (var entry in Directory.EnumerateFileSystemEntries(directory))
 			{
 				var attributes = File.GetAttributes(entry);
 				if ((attributes & FileAttributes.ReparsePoint) is not 0)
-					throw new AutomationPackageValidationException("Automation Packages cannot contain reparse points.");
+					throw AutomationValidationException.Package("Automation Packages cannot contain reparse points.");
 				if ((attributes & FileAttributes.Directory) is not 0)
 					pendingDirectories.Push(entry);
 			}
 		}
 	}
-
-	internal sealed record DiscoveredPackage(
-		AutomationPackageSnapshot Snapshot,
-		bool HasValidIdentity);
 }
