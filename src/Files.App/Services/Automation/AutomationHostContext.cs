@@ -40,22 +40,7 @@ namespace Files.App.Services.Automation
 			=> new(
 				item.ItemPath,
 				item.IsFolder ? SelectedPathKind.Folder : SelectedPathKind.File,
-				IsUnc(item.ItemPath) ? SelectedLocationKind.Unc : SelectedLocationKind.Local);
-
-		/// <summary>
-		/// Recognizes both spellings of a network path: <c>\\server\share</c> and its extended-length form
-		/// <c>\\?\UNC\server\share</c>. The extended-length device form <c>\\?\C:\</c> is local despite the
-		/// leading backslashes.
-		/// </summary>
-		private static bool IsUnc(string path)
-		{
-			const string ExtendedPrefix = @"\\?\";
-
-			if (path.StartsWith(ExtendedPrefix, StringComparison.Ordinal))
-				return path.AsSpan(ExtendedPrefix.Length).StartsWith("UNC\\", StringComparison.OrdinalIgnoreCase);
-
-			return path.StartsWith(@"\\", StringComparison.Ordinal);
-		}
+				AutomationSelectionRules.ClassifyLocation(item.ItemPath));
 
 		private void Context_PropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{

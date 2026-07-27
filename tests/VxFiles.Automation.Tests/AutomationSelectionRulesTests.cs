@@ -132,6 +132,21 @@ public sealed class AutomationSelectionRulesTests
 		Assert.AreEqual(AutomationSelectionEligibility.Eligible, AutomationSelectionRules.Evaluate(policy, selection));
 	}
 
+	/// <summary>
+	/// An action is told whether its input sits on a share, so the distinction has to survive both spellings of a
+	/// network path and must not misread an extended-length local path as one.
+	/// </summary>
+	[TestMethod]
+	[DataRow(@"C:\notes\a.txt", SelectedLocationKind.Local)]
+	[DataRow(@"\\?\C:\notes\a.txt", SelectedLocationKind.Local)]
+	[DataRow(@"\\server\share\a.txt", SelectedLocationKind.Unc)]
+	[DataRow(@"\\?\UNC\server\share\a.txt", SelectedLocationKind.Unc)]
+	[DataRow(@"\\?\unc\server\share\a.txt", SelectedLocationKind.Unc)]
+	public void Location_classification_covers_both_spellings_of_a_network_path(string path, SelectedLocationKind expected)
+	{
+		Assert.AreEqual(expected, AutomationSelectionRules.ClassifyLocation(path));
+	}
+
 	[TestMethod]
 	public void Declared_kinds_use_the_manifest_vocabulary()
 	{

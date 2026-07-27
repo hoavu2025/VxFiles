@@ -37,6 +37,37 @@ public static class AutomationSelectionRules
 		=> kind is SelectedPathKind.File ? "file" : "folder";
 
 	/// <summary>
+	/// Classifies a path as local or on a network share.
+	/// </summary>
+	/// <remarks>
+	/// Recognizes both spellings of a network path: <c>\\server\share</c> and its extended-length form
+	/// <c>\\?\UNC\server\share</c>. The extended-length device form <c>\\?\C:\</c> is local despite the leading
+	/// backslashes, which is the case a plain "starts with two backslashes" test gets wrong.
+	///
+	/// <para>
+	/// An action is told which it got so it can decide for itself — a network path can vanish mid-run in ways a
+	/// local one cannot. It is not an admission rule: a share the user can browse is one they can act on.
+	/// </para>
+	/// </remarks>
+	public static SelectedLocationKind ClassifyLocation(string path)
+	{
+		ArgumentNullException.ThrowIfNull(path);
+
+		const string ExtendedPrefix = @"\\?\";
+
+		if (path.StartsWith(ExtendedPrefix, StringComparison.Ordinal))
+		{
+			return path.AsSpan(ExtendedPrefix.Length).StartsWith("UNC\\", StringComparison.OrdinalIgnoreCase)
+				? SelectedLocationKind.Unc
+				: SelectedLocationKind.Local;
+		}
+
+		return path.StartsWith(@"\\", StringComparison.Ordinal)
+			? SelectedLocationKind.Unc
+			: SelectedLocationKind.Local;
+	}
+
+	/// <summary>
 	/// Reports the first reason <paramref name="selection"/> fails <paramref name="policy"/>, or
 	/// <see cref="AutomationSelectionEligibility.Eligible"/> when it satisfies every rule.
 	/// </summary>

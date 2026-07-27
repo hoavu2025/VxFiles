@@ -37,12 +37,13 @@ internal sealed class AutomationFixture : IDisposable
 		=> Path.GetFullPath(Path.Join(AppContext.BaseDirectory, "AutomationPackages"));
 
 	/// <param name="copyRuntime">
-	/// Copies the pinned runtime into the fixture so a test can mutate it without touching the shared
-	/// app-local copy. Sessions must then be constructed directly, because the pinned-location check rejects it.
+	/// Copies the whole pinned runtime tree — runner scripts and interpreter — into the fixture so a test can
+	/// mutate it without touching the shared app-local copy. Sessions must then be constructed directly,
+	/// because the pinned-location check rejects it.
 	/// </param>
 	public static AutomationFixture Create(bool copyRuntime = false)
 	{
-		var pinnedRuntime = Path.GetDirectoryName(PinnedAutomationPython.ExecutablePath)!;
+		var pinnedRuntime = PinnedAutomationPython.RuntimeRoot;
 		if (!File.Exists(PinnedAutomationPython.ExecutablePath))
 		{
 			const string message = "The pinned runtime is missing. Run scripts\\automation\\Acquire-Python.ps1.";
@@ -65,13 +66,14 @@ internal sealed class AutomationFixture : IDisposable
 			CopyDirectory(pinnedRuntime, runtime);
 		}
 
-		var executable = Path.Join(runtime, "python.exe");
+		var executable = Path.Join(runtime, "Python", "python.exe");
 		return new(
 			root,
 			new(
 				[packages],
 				Path.Join(root, "state"),
 				Path.Join(root, "temp"),
+				runtime,
 				executable,
 				PinnedAutomationPython.Version,
 				Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(executable))),
@@ -110,7 +112,10 @@ internal sealed class AutomationFixture : IDisposable
 		return path;
 	}
 
-	public string RuntimeDirectory => Path.GetDirectoryName(Options.PythonExecutablePath)!;
+	/// <summary>
+	/// The runtime tree package trust covers: the runner scripts, with the interpreter beneath them.
+	/// </summary>
+	public string RuntimeDirectory => Options.RuntimeRoot;
 
 	public AutomationInvocation Invocation(
 		IAutomationSession session,

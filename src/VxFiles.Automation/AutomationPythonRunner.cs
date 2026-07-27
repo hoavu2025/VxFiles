@@ -270,7 +270,7 @@ internal static class AutomationPythonRunner
 		string cancellationEventName,
 		string startEventName)
 	{
-		var bootstrapPath = Path.Join(AppContext.BaseDirectory, "AutomationRuntime", "vxfiles_runner.py");
+		var bootstrapPath = Path.Join(options.RuntimeRoot, "vxfiles_runner.py");
 		var startInfo = new ProcessStartInfo
 		{
 			FileName = options.PythonExecutablePath,

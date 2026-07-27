@@ -65,6 +65,33 @@ The Info Pane is where VxFiles-owned automation meets inherited Files code, so u
 
 Automation package discovery, validation, filtering, and selection admission stay in `VxFiles.Automation` and `VxFiles.Automation.Abstractions`. Do not move any of it into `Files.App` to resolve a conflict. In particular `AutomationSelectionRules` is shared by the Run button and by `AutomationSession`: reimplementing either side in `Files.App` is how a button starts promising runs the session will refuse.
 
+### Automation touch points
+
+Files upstream also owns, so a merge can conflict in them. Each carries VxFiles automation code that must survive:
+
+| File | What it carries |
+| --- | --- |
+| `src/Files.App/Data/Enums/InfoPaneTabs.cs` | the `Tools` member |
+| `src/Files.App/UserControls/Pane/InfoPane.xaml` | the tab selector, `ToolsPaneHost`, and three visual states |
+| `src/Files.App/Actions/Show/ToggleToolsPaneAction.cs` | the generated `Commands.ToggleToolsPane` |
+| `src/Files.App/App.xaml.cs` | session disposal in `Window_Closed` |
+| `src/Files.App/Helpers/Application/AppLifecycleHelper.cs` | the `IAutomationSessionService`, `IAutomationHostContext`, and `AutomationToolsViewModel` registrations |
+| `src/Files.App/Strings/en-US/Resources.resw` | every `Automation*` string |
+| `src/Files.App/Files.App.csproj` | the `VxFiles.Automation` reference and the `AutomationPayload.props` import |
+
+Wholly VxFiles-owned. These cannot conflict, but a merge that resolves by taking upstream wholesale will delete them:
+
+- `src/VxFiles.Automation/` and `src/VxFiles.Automation.Abstractions/` — the headless module and its contracts, including `Runtime/*.py` and `BundledPackages/`.
+- `src/Files.App/Services/Automation/` — the four host adapters: session ownership, host context, trust consent, result routing.
+- `src/Files.App/Data/Contracts/IAutomation*.cs`, `Data/Items/Automation*.cs`, `Data/Enums/Automation*.cs`, `Data/TemplateSelectors/AutomationToolsItemTemplateSelector.cs`.
+- `src/Files.App/UserControls/Pane/AutomationToolsPane.xaml{,.cs}`, `ViewModels/UserControls/AutomationToolsViewModel.cs`.
+- `src/Files.App/Dialogs/AutomationTrustDialog.xaml{,.cs}` and `ViewModels/Dialogs/AutomationTrustDialogViewModel.cs`.
+- `src/Files.App/Extensions/AutomationLabelExtensions.cs` — the only place Automation enums become user-visible text.
+- `scripts/automation/` — runtime acquisition, its pinned hash manifest, and the headless tracer.
+- `tests/VxFiles.Automation.Tests/`.
+
+`src/Files.App.Controls/**/*AutomationPeer.cs` are inherited UI Automation peers and have nothing to do with this feature. Take upstream for those.
+
 ## Branding and fork ownership
 
 Preserve:

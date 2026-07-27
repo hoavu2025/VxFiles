@@ -25,8 +25,11 @@ internal static class AutomationTrustFingerprint
 		AutomationModuleOptions options,
 		ImmutableArray<AutomationExternalToolIdentity> tools)
 	{
-		var runnerRoot = Path.GetDirectoryName(Path.GetFullPath(options.PythonExecutablePath))!;
-		var runnerFingerprint = FingerprintTree(runnerRoot, canonicalizeManifest: false);
+		// The whole runtime tree, not just the interpreter beneath it: vxfiles_runner.py stands between the host
+		// and every action, so a change to it must renew trust exactly as a change to python.exe does. Actions
+		// run with PYTHONDONTWRITEBYTECODE, so importing the runner cannot drop a __pycache__ in here and make
+		// the fingerprint move on its own.
+		var runnerFingerprint = FingerprintTree(options.RuntimeRoot, canonicalizeManifest: false);
 		using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
 		AppendRecord(hash, "manifest", CanonicalizeJson(package.ManifestBytes));
 		AppendRecord(hash, "package", Encoding.UTF8.GetBytes(FingerprintTree(package.PackagePath, canonicalizeManifest: true)));

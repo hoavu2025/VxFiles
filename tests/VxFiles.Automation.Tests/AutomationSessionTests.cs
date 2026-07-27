@@ -162,8 +162,15 @@ public sealed class AutomationSessionTests
 		Assert.AreNotEqual(firstFingerprint, store.TrustedFingerprintFor(AutomationManifests.DefaultPackageId));
 	}
 
+	/// <summary>
+	/// Trust covers the runner scripts as well as the interpreter. <c>vxfiles_runner.py</c> stands between the
+	/// host and every action, so editing it must renew consent exactly as editing <c>python.exe</c> would;
+	/// otherwise trust granted to a package would carry over to a runner the user never agreed to.
+	/// </summary>
 	[TestMethod]
-	public async Task Changed_app_local_runner_content_renews_trust()
+	[DataRow("runner-change.marker", DisplayName = "a new file in the runtime tree")]
+	[DataRow("vxfiles_runner.py", DisplayName = "the runner script itself")]
+	public async Task Changed_app_local_runner_content_renews_trust(string changedFileName)
 	{
 		using var fixture = AutomationFixture.Create(copyRuntime: true);
 		fixture.AddPackage(
@@ -175,10 +182,14 @@ public sealed class AutomationSessionTests
 
 		await InvokeOnceAsync();
 		Assert.AreEqual(1, trust.RequestCount);
+		var firstFingerprint = store.TrustedFingerprintFor(AutomationManifests.DefaultPackageId);
 
-		await File.WriteAllTextAsync(Path.Join(fixture.RuntimeDirectory, "runner-change.marker"), "changed");
+		var changedPath = Path.Join(fixture.RuntimeDirectory, changedFileName);
+		await File.AppendAllTextAsync(changedPath, $"{Environment.NewLine}# changed{Environment.NewLine}");
 		await InvokeOnceAsync();
+
 		Assert.AreEqual(2, trust.RequestCount);
+		Assert.AreNotEqual(firstFingerprint, store.TrustedFingerprintFor(AutomationManifests.DefaultPackageId));
 
 		async Task InvokeOnceAsync()
 		{
