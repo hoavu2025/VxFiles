@@ -312,6 +312,10 @@ namespace Files.App
 			// Wait for ongoing file operations
 			FileOperationsHelpers.WaitForCompletion();
 
+			// Stop any Automation Action still running. Disposal signals every process tree and drains briefly,
+			// so a script does not outlive the window that started it.
+			await Ioc.Default.GetRequiredService<IAutomationSessionService>().DisposeAsync();
+
 			// Hand any update downloaded this session to the updater. It waits for this process to exit and
 			// installs without prompting, so the next launch is already the new version.
 			Ioc.Default.GetRequiredService<IUpdateService>().ApplyPendingUpdateOnExit();

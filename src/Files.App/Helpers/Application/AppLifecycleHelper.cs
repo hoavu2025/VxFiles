@@ -264,6 +264,7 @@ namespace Files.App.Helpers
 					.AddSingleton<IWindowsCompatibilityService, WindowsCompatibilityService>()
 					.AddSingleton</*IVersionControlService,*/ LibGit2Service>()
 					.AddSingleton<IAutomationSessionService, AutomationSessionService>()
+					.AddSingleton<IAutomationHostContext, AutomationHostContext>()
 					// ViewModels
 					.AddSingleton<MainPageViewModel>()
 					.AddSingleton<InfoPaneViewModel>()

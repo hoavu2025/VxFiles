@@ -13,12 +13,6 @@ namespace VxFiles.Automation;
 /// </summary>
 internal sealed class AutomationSession : IAutomationSession
 {
-	/// <summary>
-	/// Two simultaneous runs at most, and never more than one per Automation Package. Requests beyond that
-	/// are refused rather than queued, so an invocation always maps to an observable outcome.
-	/// </summary>
-	private const int MaximumGlobalRuns = 2;
-
 	private const string StaleCatalogMessage = "The Automation catalog changed; capture a new invocation.";
 
 	private static readonly TimeSpan CatalogRefreshDebounce = TimeSpan.FromMilliseconds(150);
@@ -89,8 +83,8 @@ internal sealed class AutomationSession : IAutomationSession
 
 			if (IsPackageBusy(packageId))
 				throw new InvalidOperationException($"Automation Package '{packageId.Value}' is already running an action.");
-			if (_activeRunControls.Count + _pendingPackageIds.Count >= MaximumGlobalRuns)
-				throw new InvalidOperationException("Two Automation Actions are already running.");
+			if (_activeRunControls.Count + _pendingPackageIds.Count >= AutomationLimits.MaximumConcurrentRuns)
+				throw new InvalidOperationException($"{AutomationLimits.MaximumConcurrentRuns} Automation Actions are already running.");
 			_pendingPackageIds.Add(packageId);
 		}
 
@@ -314,10 +308,15 @@ internal sealed class AutomationSession : IAutomationSession
 			};
 			_activeRunControls.Remove(runId);
 			control.Dispose();
+			// Newest first, and trimmed from the tail: a session left open for a working day would otherwise
+			// retain every run's logs and captured selection for as long as the process lives.
+			var recent = _snapshot.RecentRuns.Insert(0, terminal);
 			ReplaceSnapshot(_snapshot with
 			{
 				ActiveRuns = _snapshot.ActiveRuns.Remove(current),
-				RecentRuns = _snapshot.RecentRuns.Insert(0, terminal),
+				RecentRuns = recent.Length > AutomationLimits.MaximumRecentRuns
+					? recent.RemoveRange(AutomationLimits.MaximumRecentRuns, recent.Length - AutomationLimits.MaximumRecentRuns)
+					: recent,
 			});
 		}
 
@@ -349,26 +348,27 @@ internal sealed class AutomationSession : IAutomationSession
 		}
 	}
 
+	/// <summary>
+	/// Re-checks the selection the host already screened. The Tools tab disables Run for an ineligible
+	/// selection, but a caller can invoke directly and the selection is captured before consent, so admission
+	/// is enforced here rather than trusted.
+	/// </summary>
 	private static void ValidateSelection(AutomationActionDefinition action, SelectionSnapshot selection)
 	{
-		if (selection.Items.Length < action.Selection.MinItems || selection.Items.Length > action.Selection.MaxItems)
-			throw new InvalidOperationException("The selected item count is outside this action's supported range.");
+		var eligibility = AutomationSelectionRules.Evaluate(action.Selection, selection);
+		if (eligibility is AutomationSelectionEligibility.Eligible)
+			return;
 
-		foreach (var item in selection.Items)
+		throw new InvalidOperationException(eligibility switch
 		{
-			if (!Path.IsPathFullyQualified(item.FullPath))
-				throw new InvalidOperationException("Automation selections require canonical absolute filesystem paths.");
-
-			var declaredKind = item.Kind is SelectedPathKind.File ? "file" : "folder";
-			if (!action.Selection.ItemKinds.Contains(declaredKind, StringComparer.Ordinal))
-				throw new InvalidOperationException($"The action does not support selected {declaredKind} items.");
-
-			if (item.Kind is SelectedPathKind.File && !action.Selection.Extensions.IsEmpty &&
-				!action.Selection.Extensions.Contains(Path.GetExtension(item.FullPath), StringComparer.OrdinalIgnoreCase))
-			{
-				throw new InvalidOperationException($"The action does not support '{Path.GetExtension(item.FullPath)}' files.");
-			}
-		}
+			AutomationSelectionEligibility.TooFewItems or AutomationSelectionEligibility.TooManyItems
+				=> "The selected item count is outside this action's supported range.",
+			AutomationSelectionEligibility.PathNotFullyQualified
+				=> "Automation selections require canonical absolute filesystem paths.",
+			AutomationSelectionEligibility.UnsupportedExtension
+				=> "The action does not support one of the selected file types.",
+			_ => "The action does not support one of the selected item kinds.",
+		});
 	}
 
 	private void ReplaceSnapshot(AutomationSnapshot replacement)

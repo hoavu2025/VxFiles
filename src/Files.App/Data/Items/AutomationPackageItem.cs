@@ -13,11 +13,18 @@ namespace Files.App.Data.Items
 	{
 		private readonly AutomationPackageSnapshot _snapshot;
 
+		// Held only to pass on to the action rows that ShowActions rebuilds; this type never calls it.
+		private readonly Func<AutomationActionItem, Task> _run;
+
 		private bool _isExpanded;
 
-		public AutomationPackageItem(AutomationPackageSnapshot snapshot)
+		public AutomationPackageItem(AutomationPackageSnapshot snapshot, Func<AutomationActionItem, Task> run)
 		{
+			ArgumentNullException.ThrowIfNull(snapshot);
+			ArgumentNullException.ThrowIfNull(run);
+
 			_snapshot = snapshot;
+			_run = run;
 			Diagnostics = string.Join(Environment.NewLine, snapshot.Diagnostics);
 			HealthLabel = DescribeHealth(snapshot);
 			ShowActions(snapshot.Actions);
@@ -66,7 +73,7 @@ namespace Files.App.Data.Items
 		{
 			Actions.Clear();
 			foreach (var action in actions)
-				Actions.Add(new AutomationActionItem(action));
+				Actions.Add(new AutomationActionItem(action, _run));
 		}
 
 		/// <summary>

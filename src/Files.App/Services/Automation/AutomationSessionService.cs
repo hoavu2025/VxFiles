@@ -89,7 +89,14 @@ namespace Files.App.Services.Automation
 				VxFilesEnvironment.Version,
 				CultureInfo.CurrentUICulture.Name);
 
-			return AutomationModule.OpenAsync(options, cancellationToken);
+			// The host ports are supplied here rather than left to the module's safe defaults, which deny every
+			// trust prompt and reject every result intent — correct for a headless session, useless in the app.
+			return AutomationModule.OpenAsync(
+				options,
+				new FileAutomationStateStore(stateRoot),
+				new AutomationTrustConsent(),
+				new AutomationResultRouter(),
+				cancellationToken);
 		}
 	}
 }

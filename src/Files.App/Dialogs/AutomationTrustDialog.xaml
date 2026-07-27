@@ -1,0 +1,108 @@
+<!--  Copyright (c) VxFiles contributors. Licensed under the MIT License.  -->
+<ContentDialog
+	x:Class="Files.App.Dialogs.AutomationTrustDialog"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:helpers="using:Files.App.Helpers"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	Title="{helpers:ResourceString Name=AutomationTrustDialog/Title}"
+	CloseButtonText="{helpers:ResourceString Name=Cancel}"
+	CornerRadius="{StaticResource OverlayCornerRadius}"
+	DefaultButton="Close"
+	HighContrastAdjustment="None"
+	PrimaryButtonText="{helpers:ResourceString Name=AutomationTrustDialogRun}"
+	RequestedTheme="{x:Bind RootAppElement.RequestedTheme, Mode=OneWay}"
+	Style="{StaticResource DefaultContentDialogStyle}"
+	mc:Ignorable="d">
+
+	<ScrollViewer MaxHeight="440" HorizontalScrollMode="Disabled">
+		<StackPanel Width="440" Spacing="12">
+
+			<TextBlock
+				Text="{helpers:ResourceString Name=AutomationTrustDialogPrompt}"
+				TextWrapping="Wrap" />
+
+			<StackPanel Spacing="2">
+				<TextBlock
+					Style="{ThemeResource BodyStrongTextBlockStyle}"
+					Text="{x:Bind ViewModel.DisplayName}"
+					TextWrapping="Wrap" />
+				<TextBlock
+					Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+					Style="{ThemeResource CaptionTextBlockStyle}"
+					Text="{x:Bind ViewModel.PackageId}"
+					TextWrapping="Wrap" />
+				<TextBlock
+					Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+					Style="{ThemeResource CaptionTextBlockStyle}"
+					Text="{x:Bind ViewModel.PackageVersion}" />
+			</StackPanel>
+
+			<StackPanel Spacing="2">
+				<TextBlock
+					Style="{ThemeResource BodyStrongTextBlockStyle}"
+					Text="{helpers:ResourceString Name=AutomationTrustDialogLocation}" />
+				<TextBlock
+					Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+					IsTextSelectionEnabled="True"
+					Style="{ThemeResource CaptionTextBlockStyle}"
+					Text="{x:Bind ViewModel.PackagePath}"
+					TextWrapping="Wrap" />
+			</StackPanel>
+
+			<!--  Trust covers the whole package, so every action it contains is named, not just the one clicked.  -->
+			<StackPanel Spacing="2">
+				<TextBlock
+					Style="{ThemeResource BodyStrongTextBlockStyle}"
+					Text="{helpers:ResourceString Name=AutomationTrustDialogActions}" />
+				<TextBlock
+					Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+					Style="{ThemeResource CaptionTextBlockStyle}"
+					Text="{x:Bind ViewModel.Actions}"
+					TextWrapping="Wrap" />
+			</StackPanel>
+
+			<!--  Only packages that resolve an external executable have this section; the rest never build it.  -->
+			<StackPanel
+				x:Name="ExternalToolsSection"
+				Spacing="2"
+				x:Load="{x:Bind ViewModel.HasExternalTools}">
+				<TextBlock
+					Style="{ThemeResource BodyStrongTextBlockStyle}"
+					Text="{helpers:ResourceString Name=AutomationTrustDialogExternalTools}" />
+				<TextBlock
+					Foreground="{ThemeResource SystemFillColorCautionBrush}"
+					IsTextSelectionEnabled="True"
+					Style="{ThemeResource CaptionTextBlockStyle}"
+					Text="{x:Bind ViewModel.ExternalTools}"
+					TextWrapping="Wrap" />
+			</StackPanel>
+
+			<StackPanel Spacing="2">
+				<TextBlock
+					Style="{ThemeResource BodyStrongTextBlockStyle}"
+					Text="{helpers:ResourceString Name=AutomationTrustDialogRunning}" />
+				<TextBlock
+					Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+					Style="{ThemeResource CaptionTextBlockStyle}"
+					Text="{x:Bind ViewModel.RequestedAction}"
+					TextWrapping="Wrap" />
+				<TextBlock
+					Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+					Style="{ThemeResource CaptionTextBlockStyle}"
+					Text="{x:Bind ViewModel.SelectionSummary}"
+					TextWrapping="Wrap" />
+			</StackPanel>
+
+			<TextBlock
+				Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+				IsTextSelectionEnabled="True"
+				Style="{ThemeResource CaptionTextBlockStyle}"
+				Text="{x:Bind ViewModel.TrustFingerprint}"
+				TextTrimming="CharacterEllipsis" />
+
+		</StackPanel>
+	</ScrollViewer>
+
+</ContentDialog>

@@ -4686,7 +4686,100 @@
   <data name="AutomationToolsRun" xml:space="preserve">
     <value>Run</value>
   </data>
-  <data name="AutomationToolsRunNotYetAvailable" xml:space="preserve">
-    <value>Running automation actions is not available yet</value>
+  <data name="AutomationToolsRunReady" xml:space="preserve">
+    <value>Run this action on the current selection</value>
+  </data>
+  <data name="AutomationToolsRunRunning" xml:space="preserve">
+    <value>This action is running</value>
+  </data>
+  <data name="AutomationToolsRunUnavailable" xml:space="preserve">
+    <value>This action cannot run because it is disabled or is missing a dependency</value>
+  </data>
+  <data name="AutomationToolsRunNoFolder" xml:space="preserve">
+    <value>Open a folder to run this action</value>
+  </data>
+  <data name="AutomationToolsRunIncompatibleSelection" xml:space="preserve">
+    <value>The current selection does not match what this action accepts</value>
+  </data>
+  <data name="AutomationToolsRunBusy" xml:space="preserve">
+    <value>Wait for the running action to finish</value>
+  </data>
+  <data name="AutomationToolsRunFailed" xml:space="preserve">
+    <value>The action could not be started. See the log for details.</value>
+  </data>
+  <data name="AutomationToolsActiveRuns" xml:space="preserve">
+    <value>Running</value>
+  </data>
+  <data name="AutomationToolsRecentRuns" xml:space="preserve">
+    <value>Recent</value>
+  </data>
+  <data name="AutomationToolsCancelRun" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="AutomationRunStateStarting" xml:space="preserve">
+    <value>Starting</value>
+  </data>
+  <data name="AutomationRunStateRunning" xml:space="preserve">
+    <value>Running</value>
+  </data>
+  <data name="AutomationRunStateCancelling" xml:space="preserve">
+    <value>Cancelling</value>
+  </data>
+  <data name="AutomationRunStateSucceeded" xml:space="preserve">
+    <value>Succeeded</value>
+  </data>
+  <data name="AutomationRunStateFailed" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+  <data name="AutomationRunStateTimedOut" xml:space="preserve">
+    <value>Timed out</value>
+  </data>
+  <data name="AutomationRunStateCancelled" xml:space="preserve">
+    <value>Cancelled</value>
+  </data>
+  <data name="AutomationToolsResultRefreshed" xml:space="preserve">
+    <value>Refreshed the folder</value>
+  </data>
+  <data name="AutomationToolsResultRevealed" xml:space="preserve">
+    <value>Selected {0} item(s)</value>
+  </data>
+  <data name="AutomationToolsResultStale" xml:space="preserve">
+    <value>Skipped because you moved to another folder</value>
+  </data>
+  <data name="AutomationToolsResultOutsideFolder" xml:space="preserve">
+    <value>Skipped because the items are outside the folder the action ran in</value>
+  </data>
+  <data name="AutomationToolsResultNotListed" xml:space="preserve">
+    <value>Skipped because the items are not listed in this folder</value>
+  </data>
+  <data name="AutomationToolsResultNoFolder" xml:space="preserve">
+    <value>Skipped because no folder is open</value>
+  </data>
+  <data name="AutomationToolsResultUnsupported" xml:space="preserve">
+    <value>Skipped because the requested effect is not supported</value>
+  </data>
+  <data name="AutomationTrustDialog.Title" xml:space="preserve">
+    <value>Run this automation package?</value>
+  </data>
+  <data name="AutomationTrustDialogRun" xml:space="preserve">
+    <value>Trust and run</value>
+  </data>
+  <data name="AutomationTrustDialogPrompt" xml:space="preserve">
+    <value>This package has not run before, or its contents have changed. It runs scripts on your computer with your account's permissions. Only trust packages from a source you rely on.</value>
+  </data>
+  <data name="AutomationTrustDialogLocation" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="AutomationTrustDialogActions" xml:space="preserve">
+    <value>Trust applies to every action in this package</value>
+  </data>
+  <data name="AutomationTrustDialogExternalTools" xml:space="preserve">
+    <value>External programs this package runs</value>
+  </data>
+  <data name="AutomationTrustDialogRunning" xml:space="preserve">
+    <value>Starting now</value>
+  </data>
+  <data name="AutomationTrustSelectionSummary" xml:space="preserve">
+    <value>{0} selected item(s)</value>
   </data>
 </root>

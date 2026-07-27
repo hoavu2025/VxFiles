@@ -28,7 +28,13 @@ A VxFiles automation install, update, validation, and trust unit. One package co
 A named Python automation inside an Automation Package. Actions are independently runnable against an immutable folder-and-selection snapshot and appear as children of their package in the filterable Tools tab.
 
 **Tools Tab**
-The third Info Pane tab, after Details and Preview. It lists discovered Automation Packages as TreeView roots with their Automation Actions as children, filterable by name and description. The headless session opens the first time the tab is shown, so an app that never opens Tools never discovers packages.
+The third Info Pane tab, after Details and Preview. It lists discovered Automation Packages as TreeView roots with their Automation Actions as children, filterable by name and description, and is where actions are run, watched, and cancelled. The headless session opens the first time the tab is shown, so an app that never opens Tools never discovers packages.
+
+**Selection Policy**
+What an Automation Action declares it accepts: how many items, of which kinds, with which extensions. One evaluator in `VxFiles.Automation.Abstractions` answers it for both the Tools tab's Run button and the session's own admission check, so a button is never enabled for a run the session would refuse.
+
+**Package Trust**
+Consent granted to a whole Automation Package, recorded against a fingerprint of its content, its runner, and the external tools it resolves. It is requested before the package's first run and again whenever that fingerprint moves, and it covers every action the package contains rather than the one that triggered the prompt.
 
 **Automation Payload**
 The app-local files that make Automation work on a clean install: the hash-pinned CPython interpreter under `AutomationRuntime\Python`, the runner scripts beside it, and the bundled `vxfiles.tracer` package under `AutomationPackages`. It ships inside the ordinary Velopack release, so no user installs Python and no action ever runs on an interpreter found on PATH.

@@ -77,14 +77,16 @@ internal static class AutomationSnapshotMapping
 
 	public static AutomationActionSnapshot AvailableAction(
 		AutomationPackageId packageId,
-		AutomationActionMetadata metadata)
+		AutomationActionMetadata metadata,
+		AutomationSelectionPolicy selection)
 		=> new(
 			new(packageId, metadata.LocalId),
 			metadata.DisplayName,
 			metadata.Description,
 			metadata.Icon,
 			AutomationAvailability.Available,
-			[]);
+			[],
+			selection);
 
 	/// <summary>
 	/// Gives an action with an unusable id a content-stable identity, so diagnostics survive manifest reordering.

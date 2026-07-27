@@ -97,13 +97,35 @@ public enum AutomationAvailability
 	MissingDependency,
 }
 
+/// <summary>
+/// What an Automation Action accepts as input: how many items, of which kinds, with which file extensions.
+/// </summary>
+/// <remarks>
+/// This is a contract rather than a runner detail because a host surface has to answer "can this run on what
+/// is selected right now?" before invoking anything. Evaluating it lives in <see cref="AutomationSelectionRules"/>
+/// so the host and the session reach the same verdict.
+/// </remarks>
+public sealed record AutomationSelectionPolicy(
+	int MinItems,
+	int MaxItems,
+	ImmutableArray<string> ItemKinds,
+	ImmutableArray<string> Extensions);
+
+/// <summary>
+/// One Automation Action as a host surface sees it.
+/// </summary>
+/// <remarks>
+/// <paramref name="Selection"/> is <see langword="null"/> for an action that failed validation: its manifest
+/// never produced a policy, and it cannot be run regardless.
+/// </remarks>
 public sealed record AutomationActionSnapshot(
 	AutomationActionId Id,
 	string DisplayName,
 	string Description,
 	string? Icon,
 	AutomationAvailability Availability,
-	ImmutableArray<string> Diagnostics);
+	ImmutableArray<string> Diagnostics,
+	AutomationSelectionPolicy? Selection = null);
 
 public sealed record AutomationPackageSnapshot(
 	AutomationPackageId Id,

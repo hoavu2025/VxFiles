@@ -18,12 +18,6 @@ internal enum AutomationOutputProtocol
 	ExitCode,
 }
 
-internal sealed record AutomationSelectionPolicy(
-	int MinItems,
-	int MaxItems,
-	ImmutableArray<string> ItemKinds,
-	ImmutableArray<string> Extensions);
-
 internal sealed record AutomationExternalToolDefinition(
 	string Id,
 	string DisplayName,

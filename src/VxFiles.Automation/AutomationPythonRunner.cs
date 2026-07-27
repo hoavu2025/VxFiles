@@ -234,9 +234,13 @@ internal static class AutomationPythonRunner
 			failure = $"Bundled Python exited with code {process.ExitCode}.";
 		}
 
+		// A run that reached its own terminal frame reports what the action said it did. Anything else — failed,
+		// timed out, cancelled, or ended without a result frame — has only the state to report.
 		return new(
 			terminalState,
-			terminalState.ToString(),
+			terminalState is AutomationRunState.Succeeded && !string.IsNullOrWhiteSpace(output.TerminalMessage)
+				? output.TerminalMessage
+				: terminalState.ToString(),
 			error.Text,
 			error.Truncated,
 			output.Intents,
@@ -476,7 +480,7 @@ internal static class AutomationPythonRunner
 
 		if (line.Length > 0)
 			ProcessOutputLine(line, totalBytes, action, protocol, observe, intents);
-		return new(intents.ToImmutable());
+		return new(intents.ToImmutable(), protocol.TerminalMessage);
 	}
 
 	private static void ProcessOutputLine(
@@ -583,7 +587,9 @@ internal static class AutomationPythonRunner
 		}
 	}
 
-	private sealed record OutputDrainResult(ImmutableArray<AutomationResultIntent> Intents);
+	private sealed record OutputDrainResult(
+		ImmutableArray<AutomationResultIntent> Intents,
+		string? TerminalMessage = null);
 
 	private sealed record StandardErrorResult(string Text, bool Truncated);
 }

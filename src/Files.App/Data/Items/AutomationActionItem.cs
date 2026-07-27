@@ -9,29 +9,73 @@ namespace Files.App.Data.Items
 	/// One Automation Action row under its Automation Package in the Tools TreeView.
 	/// </summary>
 	/// <remarks>
-	/// A read-only projection of the snapshot the headless catalog produced. It resolves nothing itself, so a
-	/// row can never disagree with what the session discovered.
+	/// A projection of the snapshot the headless catalog produced, plus the run state the view model computes from
+	/// the current Files context. It resolves nothing and decides nothing itself, so a row can never disagree with
+	/// what the session discovered or with what the session will admit.
 	/// </remarks>
-	public sealed class AutomationActionItem
+	public sealed partial class AutomationActionItem : ObservableObject
 	{
-		private readonly AutomationActionSnapshot _snapshot;
+		private readonly Func<AutomationActionItem, Task> _run;
 
-		public AutomationActionItem(AutomationActionSnapshot snapshot)
+		private AutomationActionRunState _runState = AutomationActionRunState.Unavailable;
+
+		public AutomationActionItem(AutomationActionSnapshot snapshot, Func<AutomationActionItem, Task> run)
 		{
-			_snapshot = snapshot;
+			ArgumentNullException.ThrowIfNull(snapshot);
+			ArgumentNullException.ThrowIfNull(run);
+
+			Snapshot = snapshot;
+			_run = run;
 			Diagnostics = string.Join(Environment.NewLine, snapshot.Diagnostics);
 		}
 
-		public string DisplayName => _snapshot.DisplayName;
+		/// <summary>
+		/// Gets the catalog snapshot this row was built from, including the selection policy a run is admitted by.
+		/// </summary>
+		public AutomationActionSnapshot Snapshot { get; }
 
-		public string Description => _snapshot.Description;
+		public string DisplayName => Snapshot.DisplayName;
 
-		public bool HasDescription => !string.IsNullOrWhiteSpace(_snapshot.Description);
+		public string Description => Snapshot.Description;
 
-		public string AvailabilityLabel => _snapshot.Availability.ToLabel();
+		public bool HasDescription => !string.IsNullOrWhiteSpace(Snapshot.Description);
+
+		public string AvailabilityLabel => Snapshot.Availability.ToLabel();
 
 		public string Diagnostics { get; }
 
 		public bool HasDiagnostics => Diagnostics.Length is not 0;
+
+		public AutomationActionRunState RunState
+		{
+			get => _runState;
+			set
+			{
+				if (SetProperty(ref _runState, value))
+				{
+					OnPropertyChanged(nameof(CanRun));
+					OnPropertyChanged(nameof(RunStateLabel));
+					RunCommand.NotifyCanExecuteChanged();
+				}
+			}
+		}
+
+		public bool CanRun => RunState is AutomationActionRunState.Ready;
+
+		/// <summary>
+		/// Gets the localized explanation shown on the Run button's tooltip, so a disabled button says why.
+		/// </summary>
+		public string RunStateLabel => RunState switch
+		{
+			AutomationActionRunState.Ready => Strings.AutomationToolsRunReady.GetLocalizedResource(),
+			AutomationActionRunState.Running => Strings.AutomationToolsRunRunning.GetLocalizedResource(),
+			AutomationActionRunState.NoFolder => Strings.AutomationToolsRunNoFolder.GetLocalizedResource(),
+			AutomationActionRunState.IncompatibleSelection => Strings.AutomationToolsRunIncompatibleSelection.GetLocalizedResource(),
+			AutomationActionRunState.Busy => Strings.AutomationToolsRunBusy.GetLocalizedResource(),
+			_ => Strings.AutomationToolsRunUnavailable.GetLocalizedResource(),
+		};
+
+		[RelayCommand(CanExecute = nameof(CanRun))]
+		private Task RunAsync() => _run(this);
 	}
 }

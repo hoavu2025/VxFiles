@@ -80,8 +80,10 @@ public sealed class BundledAutomationPackageTests
 		var run = session.Snapshot.RecentRuns[0];
 		Assert.AreEqual(AutomationRunState.Succeeded, run.State, run.Failure + Environment.NewLine + run.StandardError);
 
-		// The terminal frame's summary is not retained on the snapshot, so the log is what proves the action
-		// actually received the selection.
+		// A completed run reports the action's own summary rather than the bare run state, so the selection the
+		// action saw is legible without reading the log.
+		Assert.AreEqual("Selection holds 1 file(s) and 0 folder(s), 0 on UNC paths.", run.Status);
+
 		var logged = string.Join(Environment.NewLine, run.Logs.Select(entry => entry.Message));
 		StringAssert.Contains(logged, "holiday.mov");
 		Assert.AreEqual(contentBefore, File.ReadAllText(selected), "The tracer must not modify the selection.");

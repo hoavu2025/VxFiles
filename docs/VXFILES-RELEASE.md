@@ -78,8 +78,10 @@ Before publishing:
 4. Confirm the installed app is under `%LocalAppData%\VxFilesApp`.
 5. Confirm settings and logs are under `%LocalAppData%\VxFiles Community\VxFiles`.
 6. Confirm `%LocalAppData%\VxFilesApp\current\AutomationRuntime\Python\python.exe` and `AutomationPackages\vxfiles.tracer\vxpackage.json` exist in the installed app.
-7. Open the Info Pane, select Tools, and confirm the bundled Tracer package lists both of its actions. Run buttons are expected to be disabled.
-8. Build the next version and install it over the first version to prove the per-user update path.
+7. Open the Info Pane, select Tools, and confirm the bundled Tracer package lists both of its actions.
+8. Select a file in the current folder, run Tracer's **Report selection**, and accept the trust prompt. It must name `vxfiles.tracer`, show the installed package path, and list both actions, not just the one being run. The run then reports the selection it saw. This is the only check that proves the pinned interpreter in the installed layout actually executes.
+9. Run the same action again and confirm no trust prompt appears. A second prompt means trust is not being persisted under `%LocalAppData%\VxFiles Community\VxFiles`.
+10. Build the next version and install it over the first version to prove the per-user update path.
 
 The first unsigned launch may show SmartScreen. That warning is different from administrator elevation and certificate trust.
 

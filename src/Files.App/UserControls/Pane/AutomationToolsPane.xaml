@@ -62,7 +62,7 @@
 				</TreeViewItem>
 			</DataTemplate>
 
-			<!--  Action child. Run stays disabled until invocation lands.  -->
+			<!--  Action child. The Run button's tooltip carries the reason whenever it is disabled.  -->
 			<DataTemplate x:Key="AutomationActionTemplate" x:DataType="items:AutomationActionItem">
 				<TreeViewItem AutomationProperties.Name="{x:Bind DisplayName}" IsExpanded="False">
 					<Grid
@@ -95,11 +95,66 @@
 						<Button
 							Grid.Column="1"
 							VerticalAlignment="Center"
+							AutomationProperties.HelpText="{x:Bind RunStateLabel, Mode=OneWay}"
+							Command="{x:Bind RunCommand}"
 							Content="{helpers:ResourceString Name=AutomationToolsRun}"
-							IsEnabled="False"
-							ToolTipService.ToolTip="{helpers:ResourceString Name=AutomationToolsRunNotYetAvailable}" />
+							ToolTipService.ToolTip="{x:Bind RunStateLabel, Mode=OneWay}" />
 					</Grid>
 				</TreeViewItem>
+			</DataTemplate>
+
+			<!--  One run, in flight or finished. The same shape either way, so a run does not jump as it ends.  -->
+			<DataTemplate x:Key="AutomationRunTemplate" x:DataType="items:AutomationRunItem">
+				<Grid
+					Padding="0,4,0,4"
+					HorizontalAlignment="Stretch"
+					ColumnSpacing="8">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="*" />
+						<ColumnDefinition Width="Auto" />
+					</Grid.ColumnDefinitions>
+					<StackPanel Spacing="2">
+						<StackPanel Orientation="Horizontal" Spacing="8">
+							<TextBlock
+								VerticalAlignment="Center"
+								Text="{x:Bind DisplayName}"
+								TextTrimming="CharacterEllipsis" />
+							<TextBlock
+								VerticalAlignment="Center"
+								Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+								Style="{ThemeResource CaptionTextBlockStyle}"
+								Text="{x:Bind StateLabel, Mode=OneWay}" />
+						</StackPanel>
+						<TextBlock
+							Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+							Style="{ThemeResource CaptionTextBlockStyle}"
+							Text="{x:Bind Status, Mode=OneWay}"
+							TextWrapping="Wrap" />
+						<ProgressBar
+							IsIndeterminate="{x:Bind IsIndeterminate, Mode=OneWay}"
+							Maximum="100"
+							Value="{x:Bind ProgressPercent, Mode=OneWay}"
+							Visibility="{x:Bind IsActive, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
+						<TextBlock
+							Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+							Style="{ThemeResource CaptionTextBlockStyle}"
+							Text="{x:Bind Effects, Mode=OneWay}"
+							TextWrapping="Wrap"
+							Visibility="{x:Bind HasEffects, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
+						<TextBlock
+							Foreground="{ThemeResource SystemFillColorCautionBrush}"
+							Style="{ThemeResource CaptionTextBlockStyle}"
+							Text="{x:Bind Failure, Mode=OneWay}"
+							TextWrapping="Wrap"
+							Visibility="{x:Bind HasFailure, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
+					</StackPanel>
+					<Button
+						Grid.Column="1"
+						VerticalAlignment="Center"
+						Command="{x:Bind CancelCommand}"
+						Content="{helpers:ResourceString Name=AutomationToolsCancelRun}"
+						Visibility="{x:Bind CanCancel, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
+				</Grid>
 			</DataTemplate>
 
 			<selectors:AutomationToolsItemTemplateSelector
@@ -113,6 +168,9 @@
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto" />
 			<RowDefinition Height="*" />
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="Auto" />
 		</Grid.RowDefinitions>
 
 		<!--  Filter and installation entry point  -->
@@ -165,5 +223,36 @@
 				TextWrapping="Wrap"
 				Visibility="{x:Bind ViewModel.ShowPackagesFolderHint, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
 		</StackPanel>
+
+		<!--
+			A refused invocation. The session's own wording names internal concepts, so this is the localized
+			summary and the detail goes to the log.
+		-->
+		<InfoBar
+			Grid.Row="2"
+			IsClosable="True"
+			IsOpen="{x:Bind ViewModel.HasRunFailure, Mode=OneWay}"
+			Message="{x:Bind ViewModel.RunFailure, Mode=OneWay}"
+			Severity="Warning" />
+
+		<!--  Runs in flight stay visible without being asked for; there are at most two of them.  -->
+		<StackPanel Grid.Row="3" Spacing="4" Visibility="{x:Bind ViewModel.HasActiveRuns, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
+			<TextBlock
+				Style="{ThemeResource BodyStrongTextBlockStyle}"
+				Text="{helpers:ResourceString Name=AutomationToolsActiveRuns}" />
+			<ItemsControl ItemTemplate="{StaticResource AutomationRunTemplate}" ItemsSource="{x:Bind ViewModel.ActiveRuns}" />
+		</StackPanel>
+
+		<!--  Finished runs are collapsed by default so history never crowds out the tree.  -->
+		<Expander
+			Grid.Row="4"
+			HorizontalAlignment="Stretch"
+			HorizontalContentAlignment="Stretch"
+			Header="{helpers:ResourceString Name=AutomationToolsRecentRuns}"
+			Visibility="{x:Bind ViewModel.HasRecentRuns, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
+			<ScrollViewer MaxHeight="220" HorizontalScrollMode="Disabled">
+				<ItemsControl ItemTemplate="{StaticResource AutomationRunTemplate}" ItemsSource="{x:Bind ViewModel.RecentRuns}" />
+			</ScrollViewer>
+		</Expander>
 	</Grid>
 </UserControl>

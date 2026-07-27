@@ -153,7 +153,7 @@ internal static class AutomationManifestValidator
 			var externalToolIds = AutomationExternalToolRules.ValidateActionReferences(actionObject, packageExternalTools);
 
 			return new(
-				AutomationSnapshotMapping.AvailableAction(packageId, metadata),
+				AutomationSnapshotMapping.AvailableAction(packageId, metadata, selection),
 				new AutomationActionDefinition(
 					new(packageId, localId),
 					entryPointPath,

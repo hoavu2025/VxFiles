@@ -21,8 +21,22 @@ internal sealed class AutomationOutputProtocolReader
 {
 	private const int MaximumFrameBytes = 65_536;
 
+	/// <summary>
+	/// How much of a frame's message is kept as the run's status. A frame may carry up to
+	/// <see cref="MaximumFrameBytes"/>, and the status is a single line shown beside the run and retained in run
+	/// history, so it is a summary rather than a place to put action output.
+	/// </summary>
+	private const int MaximumStatusLength = 200;
+
 	private long _expectedSequence = 1;
 	private bool _terminalResultSeen;
+
+	/// <summary>
+	/// The optional summary the action wrote on its terminal result frame, or <see langword="null"/> when the
+	/// action ended without one. This is the action's own account of what it did, so it outranks the generic
+	/// run state as the status a completed run reports.
+	/// </summary>
+	public string? TerminalMessage { get; private set; }
 
 	public AutomationOutputFrame Parse(string line, int utf8Bytes)
 	{
@@ -69,7 +83,7 @@ internal sealed class AutomationOutputProtocolReader
 			percent = value;
 		}
 
-		return new(percent, OptionalString(root, "message"), null, []);
+		return new(percent, Summarize(OptionalString(root, "message")), null, []);
 	}
 
 	private static AutomationOutputFrame ParseLog(JsonElement root, long sequence)
@@ -84,7 +98,7 @@ internal sealed class AutomationOutputProtocolReader
 			var value => throw new InvalidOperationException($"Unknown NDJSON log level '{value}'."),
 		};
 		var message = RequireString(root, "message");
-		return new(null, message, new(sequence, level, message), []);
+		return new(null, Summarize(message), new(sequence, level, message), []);
 	}
 
 	private AutomationOutputFrame ParseResult(JsonElement root)
@@ -92,7 +106,7 @@ internal sealed class AutomationOutputProtocolReader
 		ValidateProperties(root, ["protocol", "sequence", "type", "outcome", "message", "effects"]);
 		if (RequireString(root, "outcome") is not "succeeded")
 			throw new InvalidOperationException("NDJSON result outcome must be 'succeeded'.");
-		var message = OptionalString(root, "message");
+		var message = Summarize(OptionalString(root, "message"));
 		var intents = ImmutableArray.CreateBuilder<AutomationResultIntent>();
 		if (root.TryGetProperty("effects", out var effects))
 		{
@@ -103,6 +117,7 @@ internal sealed class AutomationOutputProtocolReader
 		}
 
 		_terminalResultSeen = true;
+		TerminalMessage = message;
 		return new(null, message, null, intents.ToImmutable());
 	}
 
@@ -155,6 +170,19 @@ internal sealed class AutomationOutputProtocolReader
 		if (!element.TryGetProperty(name, out var property) || property.ValueKind is not JsonValueKind.String)
 			throw new InvalidOperationException($"NDJSON property '{name}' must be a string.");
 		return property.GetString()!;
+	}
+
+	/// <summary>
+	/// Clamps a frame's message to a status line, collapsing the newlines an action may have written into it.
+	/// The full text stays in the log entry the frame also produced.
+	/// </summary>
+	private static string? Summarize(string? message)
+	{
+		if (message is null)
+			return null;
+
+		var single = message.ReplaceLineEndings(" ");
+		return single.Length <= MaximumStatusLength ? single : single[..MaximumStatusLength];
 	}
 
 	private static string? OptionalString(JsonElement element, string name)
