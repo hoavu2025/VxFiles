@@ -102,9 +102,16 @@ The first unsigned launch may show SmartScreen. That warning is different from a
 
 ## Automation manual matrix
 
-Most of the Automation behaviour a release depends on is covered by `Run-HeadlessTracer.ps1` and does not need a human: invalid packages and actions, duplicate ids, Unicode and UNC path handling, trust renewal on package and runner changes, missing external tools, cooperative and forced cancellation, process-tree teardown on shutdown, concurrency limits, output budgets, and run-history pruning.
+Most of the Automation behaviour a release depends on is covered by `Run-HeadlessTracer.ps1` and does not need a human: invalid packages and actions, duplicate ids, Unicode path handling, trust renewal on package and runner changes, cooperative and forced cancellation, process-tree teardown on shutdown, concurrency limits, output budgets, and run-history pruning.
 
-What the tracer cannot reach is the Tools tab itself. Check these by hand on the installed build:
+Two of those the tracer only covers synthetically, so they still need a real check. Its UNC coverage is string classification against literal `\\server\share` paths, never a mounted share; and its missing-tool coverage uses a manifest that names a tool nothing resolves, never a genuinely absent executable. If a release changes path handling or external-tool resolution, do these by hand:
+
+| Check | Expected |
+| --- | --- |
+| Browse to a real `\\server\share`, select a file, run **Report selection** | The run reports the item and counts it as being on a UNC path |
+| Add a package declaring an `externalTools` entry that is not installed | The package shows as *Missing dependency* with the tool's display name in its diagnostic, and its actions do not run |
+
+What the tracer cannot reach at all is the Tools tab itself. Check these by hand on the installed build:
 
 | Check | Expected |
 | --- | --- |
