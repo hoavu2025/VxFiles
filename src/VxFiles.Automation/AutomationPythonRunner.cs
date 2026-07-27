@@ -286,9 +286,18 @@ internal static class AutomationPythonRunner
 		};
 
 		// Isolated UTF-8 mode: no user site packages, no ambient PYTHON* configuration.
+		//
+		// Everything here has to be a flag rather than an environment variable. -I implies -E, so the
+		// interpreter ignores every PYTHON* variable in the environment below, including ones set with the
+		// intent of configuring it.
 		startInfo.ArgumentList.Add("-X");
 		startInfo.ArgumentList.Add("utf8");
 		startInfo.ArgumentList.Add("-I");
+
+		// -B, not PYTHONDONTWRITEBYTECODE. Imports must not drop a __pycache__ into the package or the runtime
+		// tree, because both are covered by the trust fingerprint and a run that mutates them makes the next run
+		// prompt for trust again.
+		startInfo.ArgumentList.Add("-B");
 		startInfo.ArgumentList.Add(bootstrapPath);
 		startInfo.ArgumentList.Add(action.EntryPointPath);
 		startInfo.ArgumentList.Add(package.PackagePath);
@@ -308,11 +317,6 @@ internal static class AutomationPythonRunner
 		CopyEnvironment("WINDIR", startInfo);
 		startInfo.Environment["TEMP"] = temporaryPath;
 		startInfo.Environment["TMP"] = temporaryPath;
-		startInfo.Environment["PYTHONUTF8"] = "1";
-		startInfo.Environment["PYTHONNOUSERSITE"] = "1";
-
-		// Imports must not drop __pycache__ into the package, which is covered by its trust fingerprint.
-		startInfo.Environment["PYTHONDONTWRITEBYTECODE"] = "1";
 		startInfo.Environment["VXFILES_AUTOMATION_RUN_ID"] = runId.Value.ToString("D");
 		startInfo.Environment["VXFILES_AUTOMATION_TEMP"] = temporaryPath;
 		startInfo.Environment["VXFILES_AUTOMATION_DATA"] = actionDataPath;

@@ -71,6 +71,7 @@ Files upstream also owns, so a merge can conflict in them. Each carries VxFiles 
 
 | File | What it carries |
 | --- | --- |
+| `Files.slnx` | the only registration of `VxFiles.Automation`, `VxFiles.Automation.Abstractions`, and `VxFiles.Automation.Tests`. Resolving this file by taking upstream drops all three projects from the solution |
 | `src/Files.App/Data/Enums/InfoPaneTabs.cs` | the `Tools` member |
 | `src/Files.App/UserControls/Pane/InfoPane.xaml` | the tab selector, `ToolsPaneHost`, and three visual states |
 | `src/Files.App/Actions/Show/ToggleToolsPaneAction.cs` | the generated `Commands.ToggleToolsPane` |

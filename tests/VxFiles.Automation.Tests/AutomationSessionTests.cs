@@ -203,6 +203,49 @@ public sealed class AutomationSessionTests
 		}
 	}
 
+	/// <summary>
+	/// Running an action must not change anything the trust fingerprint covers. An action that imports a helper
+	/// makes CPython write a <c>__pycache__</c> beside it unless it is stopped, and both the package folder and
+	/// the runtime tree are fingerprinted — so the first run would silently invalidate its own trust and the
+	/// second would prompt again.
+	/// </summary>
+	/// <remarks>
+	/// This cannot be done with an environment variable: the runner launches with <c>-I</c>, which implies
+	/// <c>-E</c> and makes the interpreter ignore <c>PYTHONDONTWRITEBYTECODE</c>. Only the <c>-B</c> flag works.
+	/// </remarks>
+	[TestMethod]
+	public async Task Importing_a_helper_does_not_disturb_the_fingerprinted_trees()
+	{
+		using var fixture = AutomationFixture.Create();
+		var packagePath = fixture.AddPackage(
+			"media",
+			AutomationManifests.Package(AutomationManifests.DefaultPackageId, AutomationManifests.Action("convert", "convert.py")),
+			("helper.py", "VALUE = 1"),
+			("convert.py", """
+				import os, sys
+				sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+				import helper
+				"""));
+		var trust = new AcceptingTrustConsent();
+		await using var session = await AutomationModule.OpenAsync(
+			fixture.Options, new MemoryStateStore(), trust, new RecordingResultRouter());
+
+		await session.InvokeAsync(fixture.Invocation(session, "hoa.media/convert"));
+		var first = session.Snapshot.RecentRuns[0];
+		Assert.AreEqual(AutomationRunState.Succeeded, first.State, first.Failure + Environment.NewLine + first.StandardError);
+
+		Assert.IsEmpty(
+			Directory.GetDirectories(packagePath, "__pycache__", SearchOption.AllDirectories),
+			"A run wrote bytecode into the package it was granted trust for.");
+		Assert.IsEmpty(
+			Directory.GetDirectories(fixture.RuntimeDirectory, "__pycache__", SearchOption.AllDirectories),
+			"A run wrote bytecode into the runtime tree that package trust covers.");
+
+		// The observable consequence: the same action, unchanged, must not ask for consent a second time.
+		await session.InvokeAsync(fixture.Invocation(session, "hoa.media/convert"));
+		Assert.AreEqual(1, trust.RequestCount, "An unchanged package asked for trust twice.");
+	}
+
 	[TestMethod]
 	public async Task Declined_trust_runs_nothing_and_records_nothing()
 	{
