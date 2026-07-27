@@ -162,7 +162,8 @@
 				Style="{ThemeResource CaptionTextBlockStyle}"
 				Text="{helpers:ResourceString Name=AutomationToolsOpenPackagesFolderDescription}"
 				TextAlignment="Center"
-				TextWrapping="Wrap" />
+				TextWrapping="Wrap"
+				Visibility="{x:Bind ViewModel.ShowPackagesFolderHint, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
 		</StackPanel>
 	</Grid>
 </UserControl>

@@ -167,6 +167,10 @@ public sealed class AutomationPackageCatalogTests
 		var snapshot = AutomationManifestCatalog.Discover(options).Snapshot;
 
 		Assert.AreEqual(2, snapshot.Packages.Length);
+
+		// Host surfaces must never key a lookup on the package id: both collided packages stay in the snapshot
+		// carrying the same id, so the collision remains visible and repairable.
+		Assert.AreEqual(1, snapshot.Packages.Select(package => package.Id).Distinct().Count());
 		Assert.IsTrue(snapshot.Packages.All(package => package.Availability is AutomationAvailability.Disabled));
 		Assert.IsTrue(snapshot.Packages.All(package => package.Diagnostics.Single().Contains("Duplicate package id", StringComparison.Ordinal)));
 	}

@@ -1,4 +1,4 @@
-// Copyright (c) Files Community
+// Copyright (c) VxFiles contributors
 // Licensed under the MIT License.
 
 namespace Files.App.Actions

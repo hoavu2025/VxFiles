@@ -36,7 +36,6 @@ namespace Files.App.ViewModels.UserControls
 
 		private string _filter = string.Empty;
 		private AutomationToolsState _state = AutomationToolsState.Loading;
-		private string _failureMessage = string.Empty;
 
 		public ObservableCollection<AutomationPackageItem> Packages { get; } = [];
 
@@ -60,6 +59,7 @@ namespace Files.App.ViewModels.UserControls
 				if (SetProperty(ref _state, value))
 				{
 					OnPropertyChanged(nameof(ShowTree));
+					OnPropertyChanged(nameof(ShowPackagesFolderHint));
 					OnPropertyChanged(nameof(Message));
 				}
 			}
@@ -68,16 +68,24 @@ namespace Files.App.ViewModels.UserControls
 		public bool ShowTree => State is AutomationToolsState.Ready;
 
 		/// <summary>
+		/// Gets whether to explain where packages are installed from. Saying so under "Automation is
+		/// unavailable" would send the user to copy folders that were never the problem.
+		/// </summary>
+		public bool ShowPackagesFolderHint => State is AutomationToolsState.Empty or AutomationToolsState.NoMatches;
+
+		/// <summary>
 		/// Gets the localized explanation shown in place of the tree, or an empty string when the tree is shown.
 		/// </summary>
+		/// <remarks>
+		/// The underlying exception is logged rather than shown. It is unlocalized developer text such as
+		/// "Run scripts/automation/Acquire-Python.ps1", which means nothing to the person reading this pane.
+		/// </remarks>
 		public string Message => State switch
 		{
 			AutomationToolsState.Loading => Strings.AutomationToolsLoading.GetLocalizedResource(),
 			AutomationToolsState.Empty => Strings.AutomationToolsEmpty.GetLocalizedResource(),
 			AutomationToolsState.NoMatches => Strings.AutomationToolsNoMatches.GetLocalizedResource(),
-			AutomationToolsState.Unavailable => _failureMessage.Length is 0
-				? Strings.AutomationToolsUnavailable.GetLocalizedResource()
-				: $"{Strings.AutomationToolsUnavailable.GetLocalizedResource()}\n{_failureMessage}",
+			AutomationToolsState.Unavailable => Strings.AutomationToolsUnavailable.GetLocalizedResource(),
 			_ => string.Empty,
 		};
 
@@ -105,7 +113,6 @@ namespace Files.App.ViewModels.UserControls
 				// Most often the pinned interpreter is missing from a build that never ran the Automation
 				// payload. Say so in the pane instead of leaving an empty tree that looks like "no packages".
 				App.Logger.LogWarning(ex, "Automation Tools could not open the headless session");
-				_failureMessage = ex.Message;
 				State = AutomationToolsState.Unavailable;
 			}
 			finally
@@ -134,9 +141,20 @@ namespace Files.App.ViewModels.UserControls
 			if (e.PropertyName is not nameof(IAutomationSession.Snapshot) || _session is null)
 				return;
 
-			// The session raises this from its filesystem watcher, so the rebuild has to be marshalled.
+			// The session raises this from its filesystem watcher, so the rebuild has to be marshalled. Nothing
+			// upstream of the dispatcher can catch a failure here, so a bad projection must not reach it.
 			var snapshot = _session.Snapshot;
-			_ = MainWindow.Instance.DispatcherQueue.EnqueueOrInvokeAsync(() => ApplyCatalog(snapshot));
+			_ = MainWindow.Instance.DispatcherQueue.EnqueueOrInvokeAsync(() =>
+			{
+				try
+				{
+					ApplyCatalog(snapshot);
+				}
+				catch (Exception ex)
+				{
+					App.Logger.LogWarning(ex, "Automation Tools could not rebuild the package tree");
+				}
+			});
 		}
 
 		/// <summary>
@@ -151,7 +169,12 @@ namespace Files.App.ViewModels.UserControls
 
 			_catalogRevision = snapshot.CatalogRevision;
 
-			var expansion = _allPackages.ToDictionary(package => package.Id, package => package.IsExpanded, StringComparer.Ordinal);
+			// Two packages can share an id: the catalog disables both and keeps both so the collision stays
+			// visible and repairable. TryAdd rather than ToDictionary because that is not an error here.
+			var expansion = new Dictionary<string, bool>(StringComparer.Ordinal);
+			foreach (var package in _allPackages)
+				expansion.TryAdd(package.Id, package.IsExpanded);
+
 			_allPackages.Clear();
 
 			foreach (var package in snapshot.Packages)
@@ -181,22 +204,21 @@ namespace Files.App.ViewModels.UserControls
 
 			_isFiltering = isFiltering;
 
-			var matches = AutomationCatalogFilter.Apply(
-				[.. _allPackages.Select(package => package.Snapshot)],
-				_filter);
-			var itemsById = _allPackages.ToDictionary(package => package.Id, StringComparer.Ordinal);
-
+			// Asking about each item in place keeps the answer attached to the row it came from. Matching a
+			// filtered result back by id would pick the wrong row whenever two packages share an id.
 			Packages.Clear();
-			foreach (var match in matches)
+			foreach (var package in _allPackages)
 			{
-				var item = itemsById[match.Id.Value];
-				item.ShowActions(match.Actions);
+				if (!AutomationCatalogFilter.TryMatch(package.Snapshot, _filter, out var actions))
+					continue;
+
+				package.ShowActions(actions);
 
 				// A root that survived the filter is a root the user is looking for.
 				if (isFiltering)
-					item.IsExpanded = true;
+					package.IsExpanded = true;
 
-				Packages.Add(item);
+				Packages.Add(package);
 			}
 
 			State = _allPackages.Count is 0
