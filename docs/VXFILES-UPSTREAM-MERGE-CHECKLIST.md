@@ -57,6 +57,7 @@ Preserve:
 - the approved Files-Dev icon for both the window and system tray;
 - repository, issues, support, release notes, download, and update URLs under `https://github.com/hoavu2025/VxFiles`;
 - the Velopack GitHub update source pointed at `hoavu2025/VxFiles`;
+- automatic updating: `SideloadUpdateService.DownloadMandatoryUpdatesAsync` fetches the release in the background and `IUpdateService.ApplyPendingUpdateOnExit`, called at the end of `App.Window_Closed`, hands it to the updater during teardown. Upstream Files only lights up the toolbar button and waits for a click, so a merge that reverts either half silently removes automatic updates;
 - the existing Files Community copyright and MIT notices where inherited code requires them.
 
 Inherited `Files.*` namespaces, internal project names, persistence identifiers, and interoperability names should remain unchanged unless VxFiles functionality requires otherwise. Renaming them increases upstream merge conflicts.

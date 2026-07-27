@@ -10,6 +10,9 @@ The public identity used by the installed application, executable, package, prot
 **Installed Distribution**
 The only supported VxFiles distribution: a self-contained .NET 10 x64 unpackaged app installed per-user through Velopack and downloaded or updated from the VxFiles GitHub fork. V1 does not ship MSIX or portable ZIP assets.
 
+**Automatic Update**
+A newer release found on launch is downloaded in the background and installed by the Velopack updater as the app exits, so the next launch runs it without anyone clicking. The address-bar update button takes the same update immediately instead.
+
 **Downstream Layer**
 The intentionally small, reviewable set of VxFiles-owned differences applied to a tagged Files Community baseline.
 

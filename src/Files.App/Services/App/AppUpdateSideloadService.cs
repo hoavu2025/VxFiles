@@ -74,8 +74,50 @@ namespace Files.App.Services
 			}
 		}
 
-		public Task DownloadMandatoryUpdatesAsync()
-			=> Task.CompletedTask;
+		/// <remarks>
+		/// VxFiles updates itself without being asked. The release is fetched quietly here and staged by
+		/// <see cref="ApplyPendingUpdateOnExit"/>, so the next launch is already the new version. The toolbar
+		/// button remains for anyone who would rather take the update immediately.
+		/// </remarks>
+		public async Task DownloadMandatoryUpdatesAsync()
+		{
+			if (_pendingUpdate is null)
+				return;
+
+			try
+			{
+				var updateManager = CreateUpdateManager();
+
+				// A release downloaded by an earlier session is still staged, so downloading it again
+				// would only re-fetch bytes that are already on disk.
+				if (updateManager.UpdatePendingRestart is not null)
+					return;
+
+				await updateManager.DownloadUpdatesAsync(_pendingUpdate);
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, "Failed to download the VxFiles update in the background");
+			}
+		}
+
+		public void ApplyPendingUpdateOnExit()
+		{
+			try
+			{
+				var updateManager = CreateUpdateManager();
+				if (updateManager.UpdatePendingRestart is not { } stagedUpdate)
+					return;
+
+				// The updater waits only 60 seconds for this process to exit, so this must run during
+				// teardown rather than when the download finishes.
+				updateManager.WaitExitThenApplyUpdates(stagedUpdate, silent: true, restart: false);
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, "Failed to stage the VxFiles update for install on exit");
+			}
+		}
 
 		public async Task CheckForUpdatesAsync()
 		{

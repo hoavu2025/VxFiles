@@ -311,6 +311,10 @@ namespace Files.App
 
 			// Wait for ongoing file operations
 			FileOperationsHelpers.WaitForCompletion();
+
+			// Hand any update downloaded this session to the updater. It waits for this process to exit and
+			// installs without prompting, so the next launch is already the new version.
+			Ioc.Default.GetRequiredService<IUpdateService>().ApplyPendingUpdateOnExit();
 		}
 
 		/// <summary>

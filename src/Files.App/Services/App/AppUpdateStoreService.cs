@@ -58,6 +58,11 @@ namespace Files.App.Services
 			_updatePackages = [];
 		}
 
+		// The Store installs updates through its own background service, so there is nothing to stage on exit.
+		public void ApplyPendingUpdateOnExit()
+		{
+		}
+
 		public async Task DownloadUpdatesAsync()
 		{
 			if (!HasUpdates())

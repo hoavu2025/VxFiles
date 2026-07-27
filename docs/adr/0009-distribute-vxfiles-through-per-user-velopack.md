@@ -1,0 +1,9 @@
+# Distribute VxFiles through per-user Velopack
+
+Install and update VxFiles as a self-contained, unpackaged x64 app through Velopack, hosted on GitHub Releases in the fork. Do not ship MSIX, App Installer, portable ZIP, or an EXE installer.
+
+The original V1 plan specified a signed MSIX bundle delivered through an App Installer descriptor and a self-signed `CN=VxFiles` certificate that each coworker imported into Local Machine `Trusted People`. Tag `v2.0.0` was published that way and is retained as an immutable prototype. That path was abandoned before `v2.0.1` because it required every recipient to perform an elevated one-time certificate trust step, and because App Installer's behavior against GitHub's `application/octet-stream` responses stayed unproven. Velopack installs per-user under `%LocalAppData%`, needs no administrator rights, no certificate trust ceremony, and no paid signing service, which suits a small coworker cohort better.
+
+The cost is a larger downstream delta. MSIX supplied packaged-app identity, storage, and lifecycle for free; an unpackaged app must provide them itself. This is why `VxFilesEnvironment` exists and why data paths, settings, tags, and resource loading carry VxFiles-owned hunks well beyond the original 21-path allowlist. Every stable-tag intake must therefore re-verify the unpackaged compatibility layer, which `docs/VXFILES-UPSTREAM-MERGE-CHECKLIST.md` covers.
+
+Updates install without being asked. The app checks GitHub Releases on launch, downloads any newer release quietly in the background, and hands it to the Velopack updater during shutdown so the next launch is already the new version. The address-bar update button remains for taking an update immediately instead of on next launch. Inherited Files behavior only surfaced that button and waited for a click, which is not an automatic update and did not satisfy what the V1 scope promised.

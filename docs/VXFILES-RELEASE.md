@@ -86,7 +86,10 @@ After publication, test from a different standard-user Windows account or machin
 2. Install without administrator credentials.
 3. Launch VxFiles.
 4. Publish a higher test version when update verification is required.
-5. Start the older installed version and confirm its update flow discovers, downloads, and applies the newer stable release.
+5. Start the older installed version, leave it running long enough to download in the background, then close it.
+6. Launch VxFiles again and confirm About reports the newer version. The update installs on exit without being clicked; the address-bar update button is only the "apply it now" shortcut.
+
+Updating requires a real Velopack installation. A copied or unzipped build reports no update because Velopack sees it as not installed.
 
 ## V1 limitations
 

@@ -55,5 +55,9 @@ namespace Files.App.Services
 		{
 			return Task.CompletedTask;
 		}
+
+		public void ApplyPendingUpdateOnExit()
+		{
+		}
 	}
 }

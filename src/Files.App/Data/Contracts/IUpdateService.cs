@@ -34,6 +34,14 @@ namespace Files.App.Data.Contracts
 
 		Task DownloadMandatoryUpdatesAsync();
 
+		/// <summary>
+		/// Applies an already downloaded update as the app shuts down, so the next launch runs it.
+		/// </summary>
+		/// <remarks>
+		/// Must be called during teardown: the external updater waits only briefly for this process to exit.
+		/// </remarks>
+		void ApplyPendingUpdateOnExit();
+
 		Task CheckForUpdatesAsync();
 
 		Task CheckForReleaseNotesAsync();
