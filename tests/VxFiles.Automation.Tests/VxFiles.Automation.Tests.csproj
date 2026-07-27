@@ -2,7 +2,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>$(TargetFrameworkVersion)</TargetFramework>
+		<TargetFramework>$(WindowsTargetFramework)</TargetFramework>
+		<TargetPlatformMinVersion>$(MinimalWindowsVersion)</TargetPlatformMinVersion>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<IsPackable>false</IsPackable>
@@ -21,6 +22,19 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\VxFiles.Automation\VxFiles.Automation.csproj" />
+	</ItemGroup>
+
+	<!--
+		Real-process tests need the pinned interpreter app-local to the test host. Run
+		scripts\automation\Acquire-Python.ps1 first; without it those tests report inconclusive.
+		Shipping this runtime with VxFiles is a separate release-packaging concern.
+	-->
+	<ItemGroup>
+		<Content Include="..\..\artifacts\python\3.14.6-win-x64\**\*"
+				 Condition="Exists('..\..\artifacts\python\3.14.6-win-x64\python.exe')">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<TargetPath>AutomationRuntime\Python\%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
+		</Content>
 	</ItemGroup>
 
 </Project>
