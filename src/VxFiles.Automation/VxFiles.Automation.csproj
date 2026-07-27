@@ -23,12 +23,12 @@
 		<AdditionalFiles Include="NativeMethods.txt" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<Content Include="Runtime\*.py">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<TargetPath>AutomationRuntime\%(Filename)%(Extension)</TargetPath>
-		</Content>
-	</ItemGroup>
+	<!-- This project owns the app-local interpreter, runner scripts, and bundled tracer package. Projects
+	     that reference it inherit the payload in their own output and publish. -->
+	<PropertyGroup>
+		<AutomationPayloadOwner>true</AutomationPayloadOwner>
+	</PropertyGroup>
+	<Import Project="AutomationPayload.props" />
 
 	<ItemGroup>
 		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">

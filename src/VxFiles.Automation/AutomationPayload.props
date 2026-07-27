@@ -1,0 +1,52 @@
+<!-- Copyright (c) Files Community. Licensed under the MIT License. -->
+<!--
+  The app-local Automation payload: the pinned interpreter, the runner scripts, and the bundled tracer
+  package. Paths resolve against this file rather than the importing project.
+
+  VxFiles.Automation owns the payload and sets AutomationPayloadOwner, so the content items are declared
+  exactly once; projects that reference it inherit those files in their own output and publish. Files.App
+  imports this file without owning it, purely so the publish guard runs in the project that publishes.
+  Declaring the content in both places would give two sources for one publish path.
+
+  The interpreter is acquired by scripts\automation\Acquire-Python.ps1 and is deliberately not committed.
+-->
+<Project>
+
+	<PropertyGroup>
+		<AutomationPayloadRoot>$(MSBuildThisFileDirectory)</AutomationPayloadRoot>
+		<AutomationPythonRoot>$(AutomationPayloadRoot)..\..\artifacts\python\3.14.6-win-x64\</AutomationPythonRoot>
+		<AutomationPythonExecutable>$(AutomationPythonRoot)python.exe</AutomationPythonExecutable>
+	</PropertyGroup>
+
+	<ItemGroup Condition="'$(AutomationPayloadOwner)' == 'true'">
+		<Content Include="$(AutomationPayloadRoot)Runtime\*.py">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<TargetPath>AutomationRuntime\%(Filename)%(Extension)</TargetPath>
+			<Visible>false</Visible>
+		</Content>
+
+		<!-- Ships next to the app so a clean install has something safe to run before any package is added.
+		     The source folder is not named Packages because .gitignore excludes every **/[Pp]ackages/* path. -->
+		<Content Include="$(AutomationPayloadRoot)BundledPackages\**\*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<TargetPath>AutomationPackages\%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
+			<Visible>false</Visible>
+		</Content>
+
+		<!-- Absent on a fresh clone until the interpreter is acquired. EnsurePinnedPythonForPublish makes
+		     that a clear failure at publish time instead of a release that silently cannot run actions. -->
+		<Content Include="$(AutomationPythonRoot)**\*"
+		         Exclude="$(AutomationPythonRoot).complete"
+		         Condition="Exists('$(AutomationPythonExecutable)')">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<TargetPath>AutomationRuntime\Python\%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
+			<Visible>false</Visible>
+		</Content>
+	</ItemGroup>
+
+	<Target Name="EnsurePinnedPythonForPublish" BeforeTargets="PrepareForPublish">
+		<Error Condition="'$(Platform)' == 'x64' And !Exists('$(AutomationPythonExecutable)')"
+		       Text="The pinned CPython runtime is required to publish VxFiles. Run scripts\automation\Acquire-Python.ps1 first." />
+	</Target>
+
+</Project>

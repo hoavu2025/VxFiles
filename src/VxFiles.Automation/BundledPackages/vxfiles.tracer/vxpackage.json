@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "vxfiles.tracer",
+  "packageVersion": "1.0.0",
+  "displayName": "VxFiles Tracer",
+  "description": "Read-only diagnostics that prove the bundled Automation runtime works on this machine.",
+  "author": "VxFiles",
+  "minimumHostVersion": "2.0.0",
+  "python": { "requires": ">=3.14,<3.15" },
+  "actions": [
+    {
+      "id": "check-runtime",
+      "displayName": "Check Automation runtime",
+      "description": "Reports the bundled interpreter version and isolation without reading the selection.",
+      "entryPoint": "actions/check_runtime.py",
+      "input": {
+        "mode": "json-stdin",
+        "selection": { "minItems": 0, "maxItems": 10000, "itemKinds": ["file", "folder"], "extensions": [] }
+      },
+      "execution": { "timeoutSeconds": 60, "maxOutputBytes": 65536 },
+      "output": { "protocol": "ndjson-v1" }
+    },
+    {
+      "id": "report-selection",
+      "displayName": "Report selection",
+      "description": "Summarizes the captured selection. Reads nothing from disk and changes nothing.",
+      "entryPoint": "actions/report_selection.py",
+      "input": {
+        "mode": "json-stdin",
+        "selection": { "minItems": 1, "maxItems": 10000, "itemKinds": ["file", "folder"], "extensions": [] }
+      },
+      "execution": { "timeoutSeconds": 60, "maxOutputBytes": 65536 },
+      "output": { "protocol": "ndjson-v1" }
+    }
+  ]
+}

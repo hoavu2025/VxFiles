@@ -43,6 +43,28 @@ if ($existingTag) {
 	throw "Git tag v$Version already exists. Build a new version instead of replacing a published release."
 }
 
+# The Automation payload must be hash-verified before it is published, because the installed app trusts
+# this interpreter to run package code and renews package trust whenever the runner changes.
+$pythonMetadata = Get-Content -Raw -LiteralPath (Join-Path $repositoryRoot 'scripts\automation\python-3.14.6-win-x64.json') | ConvertFrom-Json
+try {
+	$pythonRoot = & (Join-Path $repositoryRoot 'scripts\automation\Acquire-Python.ps1')
+}
+catch {
+	throw "The pinned CPython runtime could not be acquired or verified, so this release cannot run Automation Actions. $($_.Exception.Message)"
+}
+
+$pythonExecutable = Join-Path $pythonRoot 'python.exe'
+if (-not (Test-Path -LiteralPath $pythonExecutable)) {
+	throw "The pinned CPython runtime is missing at $pythonExecutable. Run scripts\automation\Acquire-Python.ps1."
+}
+
+$pythonHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $pythonExecutable).Hash.ToLowerInvariant()
+if ($pythonHash -ne $pythonMetadata.executableSha256) {
+	throw "The pinned CPython executable does not match its pinned hash. Expected $($pythonMetadata.executableSha256), found $pythonHash."
+}
+
+Write-Host "Verified pinned CPython $($pythonMetadata.version) ($pythonHash)."
+
 $vswhere = 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe'
 if (-not (Test-Path -LiteralPath $vswhere)) {
 	throw 'Visual Studio Installer vswhere.exe was not found.'
@@ -88,6 +110,26 @@ try {
 finally {
 	Pop-Location
 }
+
+# Velopack packs whatever the publish directory holds, so proving the payload landed here proves it ships.
+$publishedPayload = @(
+	'AutomationRuntime\Python\python.exe',
+	'AutomationRuntime\vxfiles_runner.py',
+	'AutomationRuntime\vxfiles_automation.py',
+	'AutomationPackages\vxfiles.tracer\vxpackage.json'
+)
+foreach ($relativePath in $publishedPayload) {
+	if (-not (Test-Path -LiteralPath (Join-Path $publishDirectory $relativePath))) {
+		throw "The published app is missing the Automation payload file $relativePath, so Automation Actions could not run once installed."
+	}
+}
+
+$publishedPythonHash = (Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $publishDirectory 'AutomationRuntime\Python\python.exe')).Hash.ToLowerInvariant()
+if ($publishedPythonHash -ne $pythonMetadata.executableSha256) {
+	throw "The published CPython executable does not match its pinned hash. Expected $($pythonMetadata.executableSha256), found $publishedPythonHash."
+}
+
+Write-Host 'Verified the Automation payload in the publish output.'
 
 if (-not (Test-Path -LiteralPath $vpk)) {
 	New-Item -ItemType Directory -Path $toolDirectory -Force | Out-Null

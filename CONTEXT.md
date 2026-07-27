@@ -27,4 +27,7 @@ A VxFiles automation install, update, validation, and trust unit. One package co
 **Automation Action**
 A named Python automation inside an Automation Package. Actions are independently runnable against an immutable folder-and-selection snapshot and appear as children of their package in the filterable Tools tab.
 
+**Automation Payload**
+The app-local files that make Automation work on a clean install: the hash-pinned CPython interpreter under `AutomationRuntime\Python`, the runner scripts beside it, and the bundled `vxfiles.tracer` package under `AutomationPackages`. It ships inside the ordinary Velopack release, so no user installs Python and no action ever runs on an interpreter found on PATH.
+
 V1 does not import settings or data from Files or earlier VxFiles distributions.

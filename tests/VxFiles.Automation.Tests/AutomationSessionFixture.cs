@@ -29,6 +29,13 @@ internal sealed class AutomationFixture : IDisposable
 
 	public string SelectionRoot => Path.Join(_root, "selection");
 
+	/// <summary>
+	/// The Automation Packages folder shipped beside the app. Actions here are the ones a clean install can
+	/// run before the user has added anything.
+	/// </summary>
+	public static string BundledPackageRoot
+		=> Path.GetFullPath(Path.Join(AppContext.BaseDirectory, "AutomationPackages"));
+
 	/// <param name="copyRuntime">
 	/// Copies the pinned runtime into the fixture so a test can mutate it without touching the shared
 	/// app-local copy. Sessions must then be constructed directly, because the pinned-location check rejects it.
@@ -70,6 +77,16 @@ internal sealed class AutomationFixture : IDisposable
 				Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(executable))),
 				new Version(2, 1, 0),
 				"en-US"));
+	}
+
+	/// <summary>
+	/// A fixture whose catalog is the bundled package folder rather than a temporary one, so tests exercise
+	/// the manifests that actually ship.
+	/// </summary>
+	public static AutomationFixture CreateForBundledPackages()
+	{
+		var fixture = Create();
+		return new(fixture._root, fixture.Options with { PackageRoots = [BundledPackageRoot] });
 	}
 
 	public string AddPackage(string folderName, string manifest, params (string Name, string Content)[] files)

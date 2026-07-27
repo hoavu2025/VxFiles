@@ -8,6 +8,18 @@ There is no portable ZIP, MSIX, PFX, certificate trust step, Microsoft Store sub
 
 The internal Velopack package ID is `VxFilesApp`, so the install root is `%LocalAppData%\VxFilesApp`. The visible product and installer names remain VxFiles. Application data is stored separately under `%LocalAppData%\VxFiles Community\VxFiles`; the legacy `%LocalAppData%\VxFiles` data directory is not touched.
 
+## Automation payload
+
+Every release carries the app-local Automation payload so a clean install can run Automation Actions without Python:
+
+- `AutomationRuntime\Python` — the pinned CPython 3.14.6 x64 embeddable runtime;
+- `AutomationRuntime\*.py` — the runner and cancellation helper; and
+- `AutomationPackages\vxfiles.tracer` — a read-only diagnostic package with two actions.
+
+The build script acquires the runtime through `scripts\automation\Acquire-Python.ps1`, which verifies the archive and executable SHA-256 against `scripts\automation\python-3.14.6-win-x64.json`. It then re-checks the executable hash, and after publishing confirms every payload file reached the publish directory with the interpreter still matching its pinned hash. Any mismatch or missing file aborts the release rather than shipping an app that cannot run actions. Publishing without the runtime present fails in MSBuild before the build completes.
+
+The interpreter is roughly 30 MB and is deliberately not committed; a fresh clone acquires it on first release build.
+
 ## Publish with GitHub CLI
 
 The recommended release path is a local PowerShell script that uses GitHub CLI. It does not use GitHub Actions. Before running it, install `gh`, authenticate with `gh auth login`, and commit every change on `main`.
@@ -65,7 +77,8 @@ Before publishing:
 3. Confirm the Start menu shortcut launches VxFiles.
 4. Confirm the installed app is under `%LocalAppData%\VxFilesApp`.
 5. Confirm settings and logs are under `%LocalAppData%\VxFiles Community\VxFiles`.
-6. Build the next version and install it over the first version to prove the per-user update path.
+6. Confirm `%LocalAppData%\VxFilesApp\current\AutomationRuntime\Python\python.exe` and `AutomationPackages\vxfiles.tracer\vxpackage.json` exist in the installed app.
+7. Build the next version and install it over the first version to prove the per-user update path.
 
 The first unsigned launch may show SmartScreen. That warning is different from administrator elevation and certificate trust.
 

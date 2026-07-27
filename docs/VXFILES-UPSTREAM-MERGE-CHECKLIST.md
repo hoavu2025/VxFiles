@@ -49,6 +49,8 @@ The internal Velopack package ID is `VxFilesApp`, so the installer owns `%LocalA
 
 Do not reintroduce direct `ApplicationData.Current` or `Package.Current` access in `src/Files.App`. Route local folders, settings, version, install path, and state through `VxFilesEnvironment`.
 
+`Files.App` references `VxFiles.Automation` and imports `AutomationPayload.props` without setting `AutomationPayloadOwner`. The reference carries the Automation payload into publish; the import exists so the pinned-runtime publish guard runs in the project that publishes. Dropping either one silently produces a release that cannot run Automation Actions, and setting `AutomationPayloadOwner` in both projects gives one publish path two sources.
+
 ## Branding and fork ownership
 
 Preserve:
