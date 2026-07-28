@@ -127,7 +127,20 @@ Known regression signatures:
 - Endless splash: check Sentry placeholder parsing, package-only resource/language APIs, and missing published icon paths.
 - Details pane works for folders but spins for files: check that property-list JSON is read through the physical app-resource seam and that `LoadBasicPreviewAsync` does not swallow an exception while leaving `PreviewPaneState` at `LoadingPreview`.
 - Release Notes takes over on first launch after a version change, local builds included. `CheckAppUpdate` only skips the auto-open for `AppEnvironment.Dev`, and `AppEnvironment` is hardcoded to `SideloadStable`, so a bumped `<Version>` opens and focuses the tab where an upstream dev build never would. It also lands in the restored session, so it reappears until the tab is closed.
+- A dialog opens with its title and buttons but no body: a deferred `x:Load` element never realized. See "Local fixes for upstream defects" below.
 - Context menu opens with no actions: an exception escaped `ContentPageContextFlyoutFactory.GetBaseItemMenuItems` into the flyout `Opening` catch, which leaves the menu empty. Right-clicking empty space always evaluates the current folder's `IsItemPinnedToStart`, while a plain file short-circuits before it, so an empty menu on empty space next to a working file menu points at a package-only API on the base path.
+
+## Local fixes for upstream defects
+
+Fixes to code that is otherwise identical to upstream. A merge will silently restore the broken form, and nothing about package identity hints that these files matter:
+
+- `DynamicDialog.xaml` shows its subtitle and content host with `Visibility` bindings rather than deferring them behind `x:Load`. With `x:Load` the dialog opened with a title and buttons but an empty body, because the deferred elements never realized.
+
+  What was actually observed, on a Debug x64 build: at `Opened` the view model reported `SubtitleLoad=True` and `DisplayControlLoad=True` while the dialog's root `Grid` held zero children; setting `DisplayControlLoad` false and back to true realized the element immediately; and calling `FindName` on it also realized it. `DynamicDialogFactory` fills the view model before constructing the dialog, so the flags are already true when the binding is first evaluated and no change is ever raised. Assigning the view model before `InitializeComponent` was tried and did not help, so the trigger is the absent change notification, not `DataContext` timing.
+
+  Not established, and worth resolving before generalising: whether the same shape breaks other `x:Load="{x:Bind ...}"` sites whose flag can be true from the start. `AutomationTrustDialog.xaml`, `DecompressArchiveDialog.xaml`, `CredentialDialog.xaml` and `FilesystemOperationDialog.xaml` all configure a view model before the dialog is shown and were not tested. Several sites elsewhere use the `OneTime` form and are presumed to work. Treat "bind `Visibility` when the flag can be true from the start" as the remedy once a site is confirmed broken, not as a licence to rewrite all of them.
+
+  There is no automated regression seam. The failure is XAML deferral behaviour and needs a real UI host; `tests/Files.App.UITests` and `tests/Files.InteractionTests` are upstream WinAppDriver harnesses that the unpackaged fork does not run, and the release gate runs `VxFiles.Automation.Tests`, which cannot host XAML. Verify by hand after a merge: open **New > Folder** and confirm the dialog has both the "Enter an item name" subtitle and a text box, then open a shortcut with a missing target and confirm that subtitle-only dialog still appears and the app survives.
 
 ## Package-only feature omissions
 

@@ -31,14 +31,15 @@
 		</Grid.RowDefinitions>
 
 		<!--  Subtitle  -->
+		<!--  Collapsed, not deferred: x:Load here never realizes. See VXFILES-UPSTREAM-MERGE-CHECKLIST.md.  -->
 		<TextBlock
 			x:Name="Subtitle"
 			Grid.Row="0"
 			HorizontalAlignment="Left"
 			VerticalAlignment="Center"
-			x:Load="{x:Bind ViewModel.SubtitleLoad, Mode=OneWay}"
 			Text="{x:Bind ViewModel.SubtitleText, Mode=OneWay}"
-			TextWrapping="WrapWholeWords" />
+			TextWrapping="WrapWholeWords"
+			Visibility="{x:Bind ViewModel.SubtitleLoad, Mode=OneWay}" />
 
 		<!--  The dynamic content control  -->
 		<ContentControl
@@ -48,8 +49,8 @@
 			VerticalAlignment="Stretch"
 			HorizontalContentAlignment="Stretch"
 			VerticalContentAlignment="Stretch"
-			x:Load="{x:Bind ViewModel.DisplayControlLoad, Mode=OneWay}"
-			Content="{x:Bind ViewModel.DisplayControl, Mode=OneWay}">
+			Content="{x:Bind ViewModel.DisplayControl, Mode=OneWay}"
+			Visibility="{x:Bind ViewModel.DisplayControlLoad, Mode=OneWay}">
 			<i:Interaction.Behaviors>
 				<!--  No need to specify CommandParameter - `e` is passed by default  -->
 				<i:EventTriggerBehavior EventName="Loaded">
