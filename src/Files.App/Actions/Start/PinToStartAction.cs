@@ -24,7 +24,9 @@ namespace Files.App.Actions
 		public ActionCategory Category
 			=> ActionCategory.Start;
 
+		// Pinning needs package identity, which VxFiles does not have.
 		public bool IsExecutable =>
+			VxFilesEnvironment.SupportsWindowsIntegration &&
 			context.ShellPage is not null;
 
 		public PinToStartAction()

@@ -6,6 +6,7 @@ using Files.App.Controls;
 using Files.App.Helpers.ContextFlyouts;
 using Files.App.UserControls.Menus;
 using Files.App.ViewModels.Layouts;
+using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -678,7 +679,8 @@ namespace Files.App.Views.Layouts
 			}
 			catch (Exception error)
 			{
-				Debug.WriteLine(error);
+				App.Logger.LogWarning(error, "Failed to build the item context menu.");
+				FillWithFallbackMenuItems(ItemContextMenuFlyout, itemsSelected: true);
 			}
 		}
 
@@ -736,7 +738,51 @@ namespace Files.App.Views.Layouts
 			}
 			catch (Exception error)
 			{
-				Debug.WriteLine(error);
+				App.Logger.LogWarning(error, "Failed to build the empty space context menu.");
+				FillWithFallbackMenuItems(BaseContextMenuFlyout, itemsSelected: false);
+			}
+		}
+
+		/// <summary>
+		/// Puts a handful of always-applicable commands into a flyout whose contents could not be built.
+		/// An empty menu reads as a broken app and leaves no way out; these few entries keep the page usable.
+		/// </summary>
+		private void FillWithFallbackMenuItems(CommandBarFlyout flyout, bool itemsSelected)
+		{
+			try
+			{
+				var commands = Ioc.Default.GetRequiredService<ICommandManager>();
+				var modifiableCommands = Ioc.Default.GetRequiredService<IModifiableCommandManager>();
+
+				List<ContextMenuFlyoutItemViewModel> items = itemsSelected
+					?
+					[
+						new ContextMenuFlyoutItemViewModelBuilder(commands.CopyItem).Build(),
+						new ContextMenuFlyoutItemViewModelBuilder(modifiableCommands.DeleteItem).Build(),
+						new ContextMenuFlyoutItemViewModelBuilder(modifiableCommands.OpenProperties).Build(),
+					]
+					:
+					[
+						new ContextMenuFlyoutItemViewModelBuilder(modifiableCommands.PasteItem).Build(),
+						new ContextMenuFlyoutItemViewModelBuilder(commands.RefreshItems).Build(),
+						new ContextMenuFlyoutItemViewModelBuilder(modifiableCommands.OpenProperties).Build(),
+					];
+
+				flyout.PrimaryCommands.Clear();
+				flyout.SecondaryCommands.Clear();
+
+				var (primaryElements, secondaryElements) = ContextFlyoutModelToElementHelper.GetAppBarItemsFromModel(items);
+
+				AddCloseHandler(flyout, primaryElements, secondaryElements);
+				primaryElements.ForEach(flyout.PrimaryCommands.Add);
+				secondaryElements.OfType<FrameworkElement>().ForEach(i => i.MinWidth = Constants.UI.ContextMenuItemsMaxWidth);
+				secondaryElements.ForEach(flyout.SecondaryCommands.Add);
+
+				RemoveOverflow(flyout);
+			}
+			catch (Exception error)
+			{
+				App.Logger.LogWarning(error, "Failed to build the fallback context menu.");
 			}
 		}
 

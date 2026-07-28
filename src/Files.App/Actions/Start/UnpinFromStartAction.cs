@@ -24,6 +24,10 @@ namespace Files.App.Actions
 		public ActionCategory Category
 			=> ActionCategory.Start;
 
+		// Unpinning needs package identity, which VxFiles does not have.
+		public bool IsExecutable
+			=> VxFilesEnvironment.SupportsWindowsIntegration;
+
 		public UnpinFromStartAction()
 		{
 			context = Ioc.Default.GetRequiredService<IContentPageContext>();

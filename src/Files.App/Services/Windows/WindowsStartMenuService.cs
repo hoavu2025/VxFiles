@@ -1,29 +1,36 @@
-﻿using Windows.UI.StartScreen;
+﻿// Copyright (c) Files Community
+// Licensed under the MIT License.
+
+using Microsoft.Extensions.Logging;
+using Windows.UI.StartScreen;
 
 namespace Files.App.Services
 {
 	/// <inheritdoc cref="IStartMenuService"/>
 	internal sealed class StartMenuService : IStartMenuService
 	{
+		// Secondary tiles need package identity. Without it the API throws rather than
+		// reporting "not pinned", and an escaped throw empties whichever menu asked.
+		private static readonly bool secondaryTilesSupported = VxFilesEnvironment.SupportsWindowsIntegration;
+
 		[Obsolete("See IStartMenuService for further information.")]
 		public bool IsPinned(string itemPath)
 		{
-			var tileId = GetNativeTileId(itemPath);
-			return SecondaryTile.Exists(tileId);
+			return TileExists(GetNativeTileId(itemPath));
 		}
 
 		/// <inheritdoc/>
 		public Task<bool> IsPinnedAsync(IStorable storable)
 		{
-			var tileId = GetNativeTileId(storable.Id);
-			var exists = SecondaryTile.Exists(tileId);
-
-			return Task.FromResult(exists);
+			return Task.FromResult(TileExists(GetNativeTileId(storable.Id)));
 		}
 
 		/// <inheritdoc/>
 		public async Task PinAsync(IStorable storable, string? displayName = null)
 		{
+			if (!secondaryTilesSupported)
+				return;
+
 			var tileId = GetNativeTileId(storable.Id);
 			displayName ??= storable.Name;
 
@@ -52,8 +59,7 @@ namespace Files.App.Services
 			}
 			catch (Exception e)
 			{
-				Debug.WriteLine(tileId);
-				Debug.WriteLine(e.ToString());
+				App.Logger.LogWarning(e, $"Failed to pin the Start menu tile {tileId}.");
 			}
 
 		}
@@ -61,10 +67,38 @@ namespace Files.App.Services
 		/// <inheritdoc/>
 		public async Task UnpinAsync(IStorable storable)
 		{
-			var startScreen = StartScreenManager.GetDefault();
+			if (!secondaryTilesSupported)
+				return;
+
 			var tileId = GetNativeTileId(storable.Id);
 
-			await startScreen.TryRemoveSecondaryTileAsync(tileId);
+			try
+			{
+				var startScreen = StartScreenManager.GetDefault();
+
+				await startScreen.TryRemoveSecondaryTileAsync(tileId);
+			}
+			catch (Exception e)
+			{
+				App.Logger.LogWarning(e, $"Failed to unpin the Start menu tile {tileId}.");
+			}
+		}
+
+		private static bool TileExists(string tileId)
+		{
+			if (!secondaryTilesSupported)
+				return false;
+
+			try
+			{
+				return SecondaryTile.Exists(tileId);
+			}
+			catch (Exception e)
+			{
+				App.Logger.LogWarning(e, $"Failed to check the Start menu tile {tileId}.");
+
+				return false;
+			}
 		}
 
 		private static string GetNativeTileId(string id)
