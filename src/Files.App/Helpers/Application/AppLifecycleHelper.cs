@@ -117,7 +117,7 @@ namespace Files.App.Helpers
 				);
 			});
 
-			FileTagsHelper.UpdateTagsDb();
+			_ = Task.Run(FileTagsHelper.UpdateTagsDb);
 
 			_ = Task.Run(async () =>
 			{
