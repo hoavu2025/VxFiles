@@ -66,6 +66,15 @@
         <Content Update="Assets\FilesOpenDialog\Files.App.Launcher.exe">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
+        <!--
+            Build copies the PRI-qualified assets into the output directory through the MSIX
+            packaging outputs, but -t:Publish never runs that and ships only Content carrying
+            copy metadata. Unpackaged, that left every ms-appx asset absent from the installed
+            app. See docs/VXFILES-UPSTREAM-MERGE-CHECKLIST.md.
+        -->
+        <Content Update="Assets\**">
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        </Content>
         <Content Include="7z.dll" Condition="'$(Platform)' == 'x86'">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>

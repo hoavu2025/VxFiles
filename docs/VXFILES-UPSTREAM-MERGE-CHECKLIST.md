@@ -25,6 +25,7 @@ Preserve these `src/Files.App/Files.App.csproj` decisions:
 - the release version is supplied by the manual release script.
 - the Velopack package reference remains centrally versioned.
 - the Files-Dev `Logo.ico` and scale-100 splash image are copied to build and publish output.
+- `Assets\**` carries `CopyToPublishDirectory`, without which the installed app ships almost no assets at all. Upstream needs no such entry because a packaged build carries assets through MSIX instead.
 - packaged background-task and out-of-process server project references, WinMD inputs, trimmer roots, and build targets remain excluded.
 
 Preserve `VelopackApp.Build().Run()` as the first statement executed by `Program.Main`. No static initializer, single-instance redirect, WinRT call, settings access, or process exit may run before it.
@@ -128,6 +129,7 @@ Known regression signatures:
 - Details pane works for folders but spins for files: check that property-list JSON is read through the physical app-resource seam and that `LoadBasicPreviewAsync` does not swallow an exception while leaving `PreviewPaneState` at `LoadingPreview`.
 - Release Notes takes over on first launch after a version change, local builds included. `CheckAppUpdate` only skips the auto-open for `AppEnvironment.Dev`, and `AppEnvironment` is hardcoded to `SideloadStable`, so a bumped `<Version>` opens and focuses the tab where an upstream dev build never would. It also lands in the restored session, so it reappears until the tab is closed.
 - A dialog opens with its title and buttons but no body: a deferred `x:Load` element never realized. See "Local fixes for upstream defects" below.
+- Icons are missing in an installed or published build but correct when run from `bin`: the `Assets\**` publish copy was lost, so every `ms-appx` image resolves to nothing. Build copies the PRI-qualified assets into the output directory through the MSIX packaging outputs, and `-t:Publish` never runs that, shipping only the `Content` items that carry copy metadata; on the 2.4.0 build that left 7 of 912 asset files installed. Nothing throws — the `Image` element stays in the tree and reports an empty bounding rectangle — so check `CopyToPublishDirectory` in `Files.App.csproj` before suspecting the icon code.
 - Context menu opens with no actions: an exception escaped `ContentPageContextFlyoutFactory.GetBaseItemMenuItems` into the flyout `Opening` catch, which leaves the menu empty. Right-clicking empty space always evaluates the current folder's `IsItemPinnedToStart`, while a plain file short-circuits before it, so an empty menu on empty space next to a working file menu points at a package-only API on the base path.
 
 ## Local fixes for upstream defects

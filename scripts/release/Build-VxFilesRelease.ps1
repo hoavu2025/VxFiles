@@ -131,6 +131,44 @@ if ($publishedPythonHash -ne $pythonMetadata.executableSha256) {
 
 Write-Host 'Verified the Automation payload in the publish output.'
 
+# Losing the asset copy leaves an app that still launches with every ms-appx image blank, so the
+# publish output is checked rather than trusted. See docs/VXFILES-UPSTREAM-MERGE-CHECKLIST.md.
+# These are named first because comparing the two trees alone passes when both are empty.
+$publishedAssets = @(
+	'Assets\FluentIcons\SidebarSections\Home.scale-100.png',
+	'Assets\FluentIcons\SidebarSections\Pinned.scale-100.png',
+	'Assets\FolderIcon.png',
+	'Assets\error.png'
+)
+foreach ($relativePath in $publishedAssets) {
+	if (-not (Test-Path -LiteralPath (Join-Path $publishDirectory $relativePath))) {
+		throw "The published app is missing the asset $relativePath, so icons loaded through ms-appx would render blank once installed."
+	}
+}
+
+# Then the whole tree, so assets added upstream are covered without editing the list above.
+$buildAssetRoots = @(
+	Get-ChildItem -LiteralPath (Join-Path $repositoryRoot 'src\Files.App\bin\x64\Release') -Directory -ErrorAction SilentlyContinue |
+		ForEach-Object { Join-Path $_.FullName 'win-x64\Assets' } |
+		Where-Object { Test-Path -LiteralPath $_ }
+)
+if ($buildAssetRoots.Count -ne 1) {
+	throw "Expected exactly one Release build asset directory under src\Files.App\bin\x64\Release, found $($buildAssetRoots.Count). Delete src\Files.App\bin and build again."
+}
+
+$buildAssetRoot = $buildAssetRoots[0]
+$expectedAssets = Get-ChildItem -LiteralPath $buildAssetRoot -Recurse -File |
+	ForEach-Object { $_.FullName.Substring($buildAssetRoot.Length + 1) }
+$publishedAssetRoot = Join-Path $publishDirectory 'Assets'
+$missingPublishedAssets = @($expectedAssets | Where-Object {
+		-not (Test-Path -LiteralPath (Join-Path $publishedAssetRoot $_))
+	})
+if ($missingPublishedAssets.Count -gt 0) {
+	throw "The published app is missing $($missingPublishedAssets.Count) of $($expectedAssets.Count) asset files that the build produced, starting with $($missingPublishedAssets[0]). If those files are stale outputs from an earlier target framework, delete src\Files.App\bin and build again."
+}
+
+Write-Host "Verified all $($expectedAssets.Count) build assets reached the publish output."
+
 if (-not (Test-Path -LiteralPath $vpk)) {
 	New-Item -ItemType Directory -Path $toolDirectory -Force | Out-Null
 	dotnet tool install vpk --tool-path $toolDirectory --version 1.2.0
