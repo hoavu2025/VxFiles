@@ -90,6 +90,9 @@ namespace Files.App
 				if (AppLifecycleHelper.AppEnvironment is not AppEnvironment.Dev)
 					AppLifecycleHelper.ConfigureSentry();
 
+				// Claim the notification activator before anything can raise a toast
+				AppToastNotificationHelper.Register();
+
 				var userSettingsService = Ioc.Default.GetRequiredService<IUserSettingsService>();
 				var isLeaveAppRunning = userSettingsService.GeneralSettingsService.LeaveAppRunning;
 
@@ -315,6 +318,8 @@ namespace Files.App
 			// Stop any Automation Action still running. Disposal signals every process tree and drains briefly,
 			// so a script does not outlive the window that started it.
 			await Ioc.Default.GetRequiredService<IAutomationSessionService>().DisposeAsync();
+
+			AppToastNotificationHelper.Unregister();
 
 			// Hand any update downloaded this session to the updater. It waits for this process to exit and
 			// installs without prompting, so the next launch is already the new version.

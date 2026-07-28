@@ -186,7 +186,9 @@ namespace Files.App
 			public const string DocumentationUrl = @"https://files.community/docs";
 			public const string DiscordUrl = @"https://discord.gg/files";
 			public const string FeatureRequestUrl = @"https://github.com/hoavu2025/VxFiles/issues/new";
-			public const string BugReportUrl = @"https://github.com/hoavu2025/VxFiles/issues/new?labels=bug&template=bug_report.yml";
+			// A raw '&' breaks AppNotificationBuilder, which embeds this URI in XML without escaping it,
+			// so the label comes from the issue form instead of a second query parameter.
+			public const string BugReportUrl = @"https://github.com/hoavu2025/VxFiles/issues/new?template=bug_report.yml";
 			public const string PrivacyPolicyUrl = @"https://files.community/privacy";
 			public const string SupportUsUrl = @"https://github.com/hoavu2025/VxFiles";
 			public const string CrowdinUrl = @"https://crowdin.com/project/files-app";
