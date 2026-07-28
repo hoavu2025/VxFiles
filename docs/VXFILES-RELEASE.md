@@ -127,7 +127,7 @@ The last two are the ones worth doing carefully: they are the only checks of res
 
 ## Publish manually without the script
 
-Create a new GitHub release in `hoavu2025/VxFiles` with:
+Create a new GitHub release in `hoa-d-vu-vgames/VxFiles` with:
 
 - tag `v<version>`;
 - title `VxFiles <version>`;

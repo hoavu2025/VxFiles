@@ -6,7 +6,7 @@ Copyright (c) 2018-present Files Community.
 Copyright (c) 2026 VxFiles contributors.
 
 Files Community source: https://github.com/files-community/Files
-VxFiles source: https://github.com/hoavu2025/VxFiles
+VxFiles source: https://github.com/hoa-d-vu-vgames/VxFiles
 
 The original Files Community copyright and licensing terms remain in effect. VxFiles-specific modifications are distributed under the MIT License unless a source file states otherwise.
 

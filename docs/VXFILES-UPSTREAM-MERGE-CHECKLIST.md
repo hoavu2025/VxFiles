@@ -100,8 +100,8 @@ Preserve:
 
 - window, About page, splash, tray, installer title, and executable branding as VxFiles;
 - the approved Files-Dev icon for both the window and system tray;
-- repository, issues, support, release notes, download, and update URLs under `https://github.com/hoavu2025/VxFiles`;
-- the Velopack GitHub update source pointed at `hoavu2025/VxFiles`;
+- repository, issues, support, release notes, download, and update URLs under `https://github.com/hoa-d-vu-vgames/VxFiles`;
+- the Velopack GitHub update source pointed at `hoa-d-vu-vgames/VxFiles`;
 - automatic updating: `SideloadUpdateService.DownloadMandatoryUpdatesAsync` fetches the release in the background and `IUpdateService.ApplyPendingUpdateOnExit`, called at the end of `App.Window_Closed`, hands it to the updater during teardown. Upstream Files only lights up the toolbar button and waits for a click, so a merge that reverts either half silently removes automatic updates;
 - the existing Files Community copyright and MIT notices where inherited code requires them.
 

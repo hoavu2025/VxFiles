@@ -10,7 +10,7 @@ namespace Files.App.Services
 {
 	public sealed partial class SideloadUpdateService : ObservableObject, IUpdateService, IDisposable
 	{
-		private const string RepositoryUrl = "https://github.com/hoavu2025/VxFiles";
+		private const string RepositoryUrl = "https://github.com/hoa-d-vu-vgames/VxFiles";
 
 		private readonly HttpClient _client = new(new SocketsHttpHandler { PooledConnectionLifetime = TimeSpan.FromMinutes(3) });
 		private readonly ILogger? _logger = Ioc.Default.GetRequiredService<ILogger<App>>();

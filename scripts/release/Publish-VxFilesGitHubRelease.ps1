@@ -8,7 +8,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$repository = 'hoavu2025/VxFiles'
+$repository = 'hoa-d-vu-vgames/VxFiles'
 $repositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $buildScript = Join-Path $PSScriptRoot 'Build-VxFilesRelease.ps1'
 $releaseDirectory = Join-Path $repositoryRoot "artifacts\releases\$Version\release"

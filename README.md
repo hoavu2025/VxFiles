@@ -6,7 +6,7 @@ V1 is an x64, self-contained MSIX application. It includes .NET 10 and the Windo
 
 ## Install
 
-V1 uses a free self-signed release certificate. Before the first installation, download `VxFiles.Release.cer` from the latest [VxFiles release](https://github.com/hoavu2025/VxFiles/releases/latest), verify its published fingerprint, and import it into:
+V1 uses a free self-signed release certificate. Before the first installation, download `VxFiles.Release.cer` from the latest [VxFiles release](https://github.com/hoa-d-vu-vgames/VxFiles/releases/latest), verify its published fingerprint, and import it into:
 
 ```text
 Local Computer\Trusted People
@@ -15,7 +15,7 @@ Local Computer\Trusted People
 This one-time trust operation requires administrator access. Install or update VxFiles through:
 
 ```text
-https://github.com/hoavu2025/VxFiles/releases/latest/download/VxFiles.appinstaller
+https://github.com/hoa-d-vu-vgames/VxFiles/releases/latest/download/VxFiles.appinstaller
 ```
 
 Only the public CER is shared. The private PFX must never be downloaded from GitHub or copied to another user.
@@ -39,7 +39,7 @@ Building is not the release process. Packages must be versioned, bundled, signed
 
 ## Downloads, updates, and support
 
-VxFiles binaries, App Installer updates, release notes, issues, and support are hosted only by the [VxFiles fork](https://github.com/hoavu2025/VxFiles). Do not use Files Community releases as a VxFiles installation or update source.
+VxFiles binaries, App Installer updates, release notes, issues, and support are hosted only by the [VxFiles fork](https://github.com/hoa-d-vu-vgames/VxFiles). Do not use Files Community releases as a VxFiles installation or update source.
 
 ## Upstream and licensing
 

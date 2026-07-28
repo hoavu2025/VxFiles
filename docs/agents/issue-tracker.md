@@ -1,6 +1,6 @@
 # Issue tracker: GitHub
 
-Issues and specifications for this repository live in GitHub Issues at `hoavu2025/VxFiles`. Use the `gh` CLI for issue operations.
+Issues and specifications for this repository live in GitHub Issues at `hoa-d-vu-vgames/VxFiles`. Use the `gh` CLI for issue operations.
 
 ## Conventions
 
