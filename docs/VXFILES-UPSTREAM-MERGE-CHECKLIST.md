@@ -117,11 +117,17 @@ Preserve these fixes even when upstream rewrites nearby startup or resource code
 - app resource JSON used by Properties and the Details pane is read through `VxFilesEnvironment.ReadAppResourceTextAsync`; `StorageFile.GetFileFromApplicationUriAsync` throws for these `ms-appx` URIs without package identity.
 - splash loading uses the physical scale-100 image shipped in publish output and must always transition to the main UI on both image success and failure.
 - the application icon path always resolves to the published Files-Dev icon.
+- `StartMenuService` consults `VxFilesEnvironment.SupportsWindowsIntegration` before touching `SecondaryTile` or `StartScreenManager`, and treats a failure as "not pinned" rather than letting it escape. Both throw `COMException 0x80070490` without package identity, and `ListedItem.IsItemPinnedToStart` reaches them from context-menu construction.
+- both flyout `Opening` handlers in `BaseLayoutPage` report build failures through `App.Logger`. Upstream writes them to `Debug.WriteLine`, which leaves a released build with no evidence.
+- `AppToastNotificationHelper.Register()` runs during launch and `Unregister()` during teardown. An unpackaged process gets no notification registration for free, and notification assets resolve from `VxFilesEnvironment.InstallPath` rather than `ms-appx`.
+- `Constants.ExternalUrl.BugReportUrl` carries at most one query parameter. `AppNotificationBuilder` embeds the invoke URI in XML without escaping it, so a second parameter's `&` makes `BuildNotification` throw and the unhandled-exception toast never appears. The `bug` label comes from `labels:` in `.github/ISSUE_TEMPLATE/bug_report.yml` instead.
 
 Known regression signatures:
 
 - Endless splash: check Sentry placeholder parsing, package-only resource/language APIs, and missing published icon paths.
 - Details pane works for folders but spins for files: check that property-list JSON is read through the physical app-resource seam and that `LoadBasicPreviewAsync` does not swallow an exception while leaving `PreviewPaneState` at `LoadingPreview`.
+- Release Notes takes over on first launch after a version change, local builds included. `CheckAppUpdate` only skips the auto-open for `AppEnvironment.Dev`, and `AppEnvironment` is hardcoded to `SideloadStable`, so a bumped `<Version>` opens and focuses the tab where an upstream dev build never would. It also lands in the restored session, so it reappears until the tab is closed.
+- Context menu opens with no actions: an exception escaped `ContentPageContextFlyoutFactory.GetBaseItemMenuItems` into the flyout `Opening` catch, which leaves the menu empty. Right-clicking empty space always evaluates the current folder's `IsItemPinnedToStart`, while a plain file short-circuits before it, so an empty menu on empty space next to a working file menu points at a package-only API on the base path.
 
 ## Package-only feature omissions
 
@@ -135,6 +141,7 @@ V1 deliberately omits or disables:
 - packaged clipboard package-family metadata;
 - packaged launcher replacement and default-file-manager registration;
 - package-dependent shell integration shown on Advanced settings;
+- Start menu pinning. `PinToStartAction` and `UnpinFromStartAction` report `IsExecutable` false, so both context-menu entries stay visible but disabled and the commands do nothing from the palette or a hotkey;
 - per-action settings and external-tool configuration. Automation Actions run from the Tools tab, but an action that declares settings or an external tool gets whatever the state store already holds; there is no UI to change it yet.
 
 When upstream changes one of these areas, merge the source when harmless but keep its entry point hidden, disabled, guarded, or excluded from the V1 build until an unpackaged implementation is explicitly approved.
