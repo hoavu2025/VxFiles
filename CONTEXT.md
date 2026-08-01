@@ -11,7 +11,10 @@ The public identity used by the installed application, executable, package, prot
 The only supported VxFiles distribution: a self-contained .NET 10 x64 unpackaged app installed per-user through Velopack and downloaded or updated from the VxFiles GitHub fork. V1 does not ship MSIX or portable ZIP assets.
 
 **Automatic Update**
-A newer release found on launch is downloaded in the background and installed by the Velopack updater as the app exits, so the next launch runs it without anyone clicking. The address-bar update button takes the same update immediately instead.
+A newer release found on launch, or by the hourly re-check while the app runs, is downloaded in the background and staged. The Velopack updater installs it as the app exits, so the next launch runs it without anyone clicking. Taking the update immediately runs the same install through the same shutdown; only whether the app relaunches differs. Nothing waits for consent, and nothing can be skipped or deferred.
+
+**Update Surface**
+Where a staged Automatic Update becomes visible: a dot on the Settings icon in the sidebar footer, and the update card at the top of the About page carrying the pending version, its release notes, the last successful check, and a restart. It informs and never gates — ignoring it changes nothing except when the update lands. The card is absent unless Velopack installed the running copy.
 
 **Downstream Layer**
 The intentionally small, reviewable set of VxFiles-owned differences applied to a tagged Files Community baseline.
