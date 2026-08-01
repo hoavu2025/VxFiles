@@ -13,3 +13,7 @@ The repository uses the five canonical triage-state labels without aliases. See 
 ### Domain docs
 
 This is a single-context repository with root `CONTEXT.md` and `docs/adr/`. See `docs/agents/domain.md`.
+
+### Build
+
+`dotnet build` cannot build `src/Files.App` — it dies in the XAML compiler with a masked internal error that looks like broken markup and is not. Use MSBuild. See `docs/agents/build.md`.
