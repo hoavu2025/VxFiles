@@ -163,6 +163,34 @@ namespace Files.App.Helpers
 
 			if (IsAppUpdated)
 				await updateService.CheckAndUpdateFilesLauncherAsync();
+
+			MainWindow.Instance.DispatcherQueue.TryEnqueue(StartPeriodicUpdateCheck);
+		}
+
+		private static Microsoft.UI.Dispatching.DispatcherQueueTimer? _periodicUpdateCheckTimer;
+
+		/// <summary>
+		/// Re-checks for updates once an hour for as long as the app runs.
+		/// </summary>
+		/// <remarks>
+		/// Load-bearing rather than a refinement. Velopack applies a staged update at startup, so the launch
+		/// check always runs against a build that has just updated itself and can only report that it is up to
+		/// date — without this the dot would almost never appear. One check costs one request against GitHub's
+		/// unauthenticated ceiling of 60 an hour, pooled across everyone sharing an IP.
+		/// </remarks>
+		private static void StartPeriodicUpdateCheck()
+		{
+			if (_periodicUpdateCheckTimer is not null ||
+				Ioc.Default.GetService<IUpdateStatusService>() is not { } updateStatusService)
+			{
+				return;
+			}
+
+			_periodicUpdateCheckTimer = MainWindow.Instance.DispatcherQueue.CreateTimer();
+			_periodicUpdateCheckTimer.Interval = TimeSpan.FromHours(1);
+			_periodicUpdateCheckTimer.IsRepeating = true;
+			_periodicUpdateCheckTimer.Tick += (_, _) => _ = updateStatusService.CheckAsync();
+			_periodicUpdateCheckTimer.Start();
 		}
 
 		/// <summary>
@@ -292,7 +320,12 @@ namespace Files.App.Helpers
 
 			// Conditional DI
 			if (AppEnvironment is AppEnvironment.SideloadPreview or AppEnvironment.SideloadStable)
-				builder.ConfigureServices(s => s.AddSingleton<IUpdateService, SideloadUpdateService>());
+				builder.ConfigureServices(s => s
+					// One instance behind both interfaces. IUpdateStatusService is registered nowhere else,
+					// so resolving it to null is what tells the About page it has no update card to show.
+					.AddSingleton<SideloadUpdateService>()
+					.AddSingleton<IUpdateService>(sp => sp.GetRequiredService<SideloadUpdateService>())
+					.AddSingleton<IUpdateStatusService>(sp => sp.GetRequiredService<SideloadUpdateService>()));
 			else if (AppEnvironment is AppEnvironment.StorePreview or AppEnvironment.StoreStable)
 				builder.ConfigureServices(s => s.AddSingleton<IUpdateService, StoreUpdateService>());
 			else

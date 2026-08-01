@@ -33,6 +33,11 @@ namespace Files.App.ViewModels.Settings
 
 		public ObservableCollection<OpenSourceLibraryItem> OpenSourceLibraries { get; }
 
+		/// <summary>
+		/// The update card above the App Info card. Hides itself where there is no updater to report on.
+		/// </summary>
+		public UpdateCardViewModel UpdateCard { get; } = new();
+
 		// Commands
 
 		public ICommand CopyAppVersionCommand { get; }

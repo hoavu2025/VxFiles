@@ -867,7 +867,7 @@ namespace Files.App.ViewModels.UserControls
 				}
 
 				if (PaneHolder?.ActivePane is IShellPage settingsShellPage)
-					settingsShellPage.NavigateToSettings();
+					settingsShellPage.NavigateToSettings(Ioc.Default.GetRequiredService<IUpdateService>().IsUpdateAvailable ? nameof(SettingsPageKind.AboutPage) : null);
 				return;
 			}
 

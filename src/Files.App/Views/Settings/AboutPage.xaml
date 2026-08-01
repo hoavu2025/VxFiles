@@ -7,10 +7,17 @@
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:dataitems="using:Files.App.Data.Items"
 	xmlns:helpers="using:Files.App.Helpers"
+	xmlns:markdown="using:CommunityToolkit.Labs.WinUI.MarkdownTextBlock"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:vm="using:Files.App.ViewModels.Settings"
+	xmlns:wctconverters="using:CommunityToolkit.WinUI.Converters"
 	xmlns:wctcontrols="using:CommunityToolkit.WinUI.Controls"
+	Unloaded="Page_Unloaded"
 	mc:Ignorable="d">
+
+	<Page.Resources>
+		<wctconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+	</Page.Resources>
 
 	<Page.DataContext>
 		<vm:AboutViewModel x:Name="ViewModel" />
@@ -27,6 +34,51 @@
 				Padding="0,0,0,12"
 				Style="{StaticResource App.Theme.SubtitleTextBlockStyle}"
 				Text="{helpers:ResourceString Name=About}" />
+
+			<!--
+				Update
+
+				Informs, never gates: a staged update installs on the next exit whether or not anyone
+				touches this card. The button only decides when.
+			-->
+			<wctcontrols:SettingsExpander
+				HorizontalAlignment="Stretch"
+				Description="{x:Bind ViewModel.UpdateCard.Description, Mode=OneWay}"
+				Header="{x:Bind ViewModel.UpdateCard.Title, Mode=OneWay}"
+				IsExpanded="{x:Bind ViewModel.UpdateCard.IsExpanded, Mode=OneWay}"
+				Visibility="{x:Bind ViewModel.UpdateCard.IsVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+				<wctcontrols:SettingsExpander.HeaderIcon>
+					<FontIcon Glyph="{x:Bind ViewModel.UpdateCard.Glyph, Mode=OneWay}" />
+				</wctcontrols:SettingsExpander.HeaderIcon>
+
+				<wctcontrols:SettingsExpander.Content>
+					<StackPanel Orientation="Horizontal" Spacing="8">
+						<ProgressRing
+							Width="16"
+							Height="16"
+							VerticalAlignment="Center"
+							IsActive="{x:Bind ViewModel.UpdateCard.IsBusy, Mode=OneWay}"
+							Visibility="{x:Bind ViewModel.UpdateCard.IsBusy, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+						<Button
+							Command="{x:Bind ViewModel.UpdateCard.ActionCommand}"
+							Content="{x:Bind ViewModel.UpdateCard.ActionText, Mode=OneWay}"
+							IsEnabled="{x:Bind ViewModel.UpdateCard.IsActionEnabled, Mode=OneWay}"
+							Style="{x:Bind ViewModel.UpdateCard.ActionStyle, Mode=OneWay}" />
+					</StackPanel>
+				</wctcontrols:SettingsExpander.Content>
+
+				<wctcontrols:SettingsExpander.ItemsHeader>
+					<!--  Release notes for the version that is waiting, not the one that is running.  -->
+					<ScrollViewer
+						MaxHeight="200"
+						Padding="58,16,16,16"
+						Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+						VerticalScrollBarVisibility="Auto"
+						Visibility="{x:Bind ViewModel.UpdateCard.AreNotesVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+						<markdown:MarkdownTextBlock x:Name="UpdateNotesMarkdown" Text="{x:Bind ViewModel.UpdateCard.Notes, Mode=OneWay}" />
+					</ScrollViewer>
+				</wctcontrols:SettingsExpander.ItemsHeader>
+			</wctcontrols:SettingsExpander>
 
 			<!--  App Info  -->
 			<wctcontrols:SettingsCard

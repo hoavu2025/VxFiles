@@ -31,6 +31,11 @@ namespace Files.App.Views
 		public SidebarViewModel SidebarAdaptiveViewModel { get; }
 		public MainPageViewModel ViewModel { get; }
 
+		/// <summary>
+		/// Backs the dot on the Settings icon, which appears only once an update is downloaded and waiting.
+		/// </summary>
+		public IUpdateService UpdateService { get; }
+
 		private bool keyReleased = true;
 
 		private DispatcherQueueTimer _updateDateDisplayTimer;
@@ -47,6 +52,7 @@ namespace Files.App.Views
 			SidebarAdaptiveViewModel = Ioc.Default.GetRequiredService<SidebarViewModel>();
 			SidebarAdaptiveViewModel.PaneFlyout = (MenuFlyout)Resources["SidebarContextMenu"];
 			ViewModel = Ioc.Default.GetRequiredService<MainPageViewModel>();
+			UpdateService = Ioc.Default.GetRequiredService<IUpdateService>();
 
 			if (AppLanguageHelper.IsPreferredLanguageRtl)
 			{

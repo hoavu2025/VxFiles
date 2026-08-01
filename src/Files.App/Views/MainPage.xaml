@@ -30,6 +30,7 @@
 		<ResourceDictionary>
 			<ResourceDictionary.MergedDictionaries>
 				<ResourceDictionary Source="ms-appx:///Styles/DefaultGridSplitterStyle.xaml" />
+				<ResourceDictionary Source="ms-appx:///Styles/StatusCenterInfoBadgeStyles.xaml" />
 			</ResourceDictionary.MergedDictionaries>
 
 			<ResourceDictionary.ThemeDictionaries>
@@ -355,19 +356,39 @@
 						Text="{x:Bind SidebarAdaptiveViewModel.SettingsSidebarItem.Text, Mode=OneWay}"
 						ToolTip="{x:Bind SidebarAdaptiveViewModel.SettingsSidebarItem.ToolTip, Mode=OneWay}">
 						<controls:SidebarItem.Icon>
-							<AnimatedIcon
-								x:Name="SettingAnimatedIcon"
-								Width="16"
-								Height="16"
-								AnimatedIcon.State="Normal"
-								Foreground="{ThemeResource TextFillColorSecondaryBrush}">
-								<AnimatedIcon.Source>
-									<animatedvisuals:AnimatedSettingsVisualSource />
-								</AnimatedIcon.Source>
-								<AnimatedIcon.FallbackIconSource>
-									<SymbolIconSource Symbol="Setting" />
-								</AnimatedIcon.FallbackIconSource>
-							</AnimatedIcon>
+							<!--
+								The dot goes on the icon rather than the SidebarItem's Decorator slot: the Compact
+								visual state collapses that slot to zero width, so a decorator badge would be invisible
+								in exactly the narrow-sidebar case it matters for.
+							-->
+							<Grid Width="20" Height="20">
+								<AnimatedIcon
+									x:Name="SettingAnimatedIcon"
+									Width="16"
+									Height="16"
+									HorizontalAlignment="Center"
+									VerticalAlignment="Center"
+									AnimatedIcon.State="Normal"
+									Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+									<AnimatedIcon.Source>
+										<animatedvisuals:AnimatedSettingsVisualSource />
+									</AnimatedIcon.Source>
+									<AnimatedIcon.FallbackIconSource>
+										<SymbolIconSource Symbol="Setting" />
+									</AnimatedIcon.FallbackIconSource>
+								</AnimatedIcon>
+								<InfoBadge
+									x:Name="UpdateReadyBadge"
+									Width="8"
+									Height="8"
+									HorizontalAlignment="Right"
+									VerticalAlignment="Top"
+									x:Load="{x:Bind UpdateService.IsUpdateAvailable, Mode=OneWay}"
+									AutomationProperties.AccessibilityView="Content"
+									AutomationProperties.Name="{helpers:ResourceString Name=UpdateReadyToInstall}"
+									Style="{StaticResource AttentionDotInfoBadgeStyle}"
+									ToolTipService.ToolTip="{helpers:ResourceString Name=UpdateReadyToInstall}" />
+							</Grid>
 						</controls:SidebarItem.Icon>
 					</controls:SidebarItem>
 				</StackPanel>
