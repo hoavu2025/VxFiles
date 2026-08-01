@@ -4785,14 +4785,14 @@
   <data name="UpdateReadyToInstall" xml:space="preserve">
     <value>An update is ready to install</value>
   </data>
-  <data name="UpdateUpToDate" xml:space="preserve">
-    <value>{0} is up to date</value>
-  </data>
   <data name="UpdateChecking" xml:space="preserve">
     <value>Checking for updates…</value>
   </data>
+  <data name="UpdateWhatsNew" xml:space="preserve">
+    <value>What's new</value>
+  </data>
   <data name="UpdateDownloading" xml:space="preserve">
-    <value>Downloading {0} {1}…</value>
+    <value>Downloading {0} {1}</value>
   </data>
   <data name="UpdateReady" xml:space="preserve">
     <value>{0} {1} is ready to install</value>

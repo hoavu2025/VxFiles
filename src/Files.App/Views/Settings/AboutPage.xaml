@@ -36,67 +36,59 @@
 				Text="{helpers:ResourceString Name=About}" />
 
 			<!--
-				Update
+				App Info
 
-				Informs, never gates: a staged update installs on the next exit whether or not anyone
-				touches this card. The button only decides when.
+				Also carries the update, because the installed version and the one waiting to replace it
+				belong on the same line rather than in competing cards. It informs and never gates: a staged
+				update installs on the next exit whether or not anyone presses anything here.
 			-->
-			<wctcontrols:SettingsExpander
-				HorizontalAlignment="Stretch"
-				Description="{x:Bind ViewModel.UpdateCard.Description, Mode=OneWay}"
-				Header="{x:Bind ViewModel.UpdateCard.Title, Mode=OneWay}"
-				IsExpanded="{x:Bind ViewModel.UpdateCard.IsExpanded, Mode=OneWay}"
-				Visibility="{x:Bind ViewModel.UpdateCard.IsVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-				<wctcontrols:SettingsExpander.HeaderIcon>
-					<FontIcon Glyph="{x:Bind ViewModel.UpdateCard.Glyph, Mode=OneWay}" />
-				</wctcontrols:SettingsExpander.HeaderIcon>
-
-				<wctcontrols:SettingsExpander.Content>
-					<StackPanel Orientation="Horizontal" Spacing="8">
-						<ProgressRing
-							Width="16"
-							Height="16"
-							VerticalAlignment="Center"
-							IsActive="{x:Bind ViewModel.UpdateCard.IsBusy, Mode=OneWay}"
-							Visibility="{x:Bind ViewModel.UpdateCard.IsBusy, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
-						<Button
-							Command="{x:Bind ViewModel.UpdateCard.ActionCommand}"
-							Content="{x:Bind ViewModel.UpdateCard.ActionText, Mode=OneWay}"
-							IsEnabled="{x:Bind ViewModel.UpdateCard.IsActionEnabled, Mode=OneWay}"
-							Style="{x:Bind ViewModel.UpdateCard.ActionStyle, Mode=OneWay}" />
-					</StackPanel>
-				</wctcontrols:SettingsExpander.Content>
-
-				<wctcontrols:SettingsExpander.ItemsHeader>
-					<!--  Release notes for the version that is waiting, not the one that is running.  -->
-					<ScrollViewer
-						MaxHeight="200"
-						Padding="58,16,16,16"
-						Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-						VerticalScrollBarVisibility="Auto"
-						Visibility="{x:Bind ViewModel.UpdateCard.AreNotesVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-						<markdown:MarkdownTextBlock x:Name="UpdateNotesMarkdown" Text="{x:Bind ViewModel.UpdateCard.Notes, Mode=OneWay}" />
-					</ScrollViewer>
-				</wctcontrols:SettingsExpander.ItemsHeader>
-			</wctcontrols:SettingsExpander>
-
-			<!--  App Info  -->
 			<wctcontrols:SettingsCard
 				HorizontalAlignment="Stretch"
-				Description="{x:Bind ViewModel.Version}"
+				Description="{x:Bind ViewModel.UpdateCard.Summary, Mode=OneWay}"
 				Header="{x:Bind ViewModel.AppName}">
 				<wctcontrols:SettingsCard.HeaderIcon>
 					<FontIcon Glyph="&#xE946;" />
 				</wctcontrols:SettingsCard.HeaderIcon>
-				<Button x:Name="CopyVersionInfo" Content="{helpers:ResourceString Name=Copy}">
-					<Button.Flyout>
-						<MenuFlyout>
-							<MenuFlyoutItem Command="{x:Bind ViewModel.CopyAppVersionCommand}" Text="{helpers:ResourceString Name=AppVersion}" />
-							<MenuFlyoutItem Command="{x:Bind ViewModel.CopyWindowsVersionCommand}" Text="{helpers:ResourceString Name=WindowsVersion}" />
-							<MenuFlyoutItem Command="{x:Bind ViewModel.CopyUserIDCommand}" Text="{helpers:ResourceString Name=UserID}" />
-						</MenuFlyout>
-					</Button.Flyout>
-				</Button>
+
+				<StackPanel Orientation="Horizontal" Spacing="8">
+					<ProgressRing
+						Width="16"
+						Height="16"
+						VerticalAlignment="Center"
+						IsActive="{x:Bind ViewModel.UpdateCard.IsBusy, Mode=OneWay}"
+						Visibility="{x:Bind ViewModel.UpdateCard.IsBusy, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+					<!--  Notes for the release that is waiting, so they are absent unless one is.  -->
+					<DropDownButton Content="{helpers:ResourceString Name=UpdateWhatsNew}" Visibility="{x:Bind ViewModel.UpdateCard.AreNotesVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+						<DropDownButton.Flyout>
+							<Flyout>
+								<ScrollViewer
+									MaxWidth="420"
+									MaxHeight="320"
+									VerticalScrollBarVisibility="Auto">
+									<markdown:MarkdownTextBlock x:Name="UpdateNotesMarkdown" Text="{x:Bind ViewModel.UpdateCard.Notes, Mode=OneWay}" />
+								</ScrollViewer>
+							</Flyout>
+						</DropDownButton.Flyout>
+					</DropDownButton>
+
+					<Button
+						Command="{x:Bind ViewModel.UpdateCard.ActionCommand}"
+						Content="{x:Bind ViewModel.UpdateCard.ActionText, Mode=OneWay}"
+						IsEnabled="{x:Bind ViewModel.UpdateCard.IsActionEnabled, Mode=OneWay}"
+						Style="{x:Bind ViewModel.UpdateCard.ActionStyle, Mode=OneWay}"
+						Visibility="{x:Bind ViewModel.UpdateCard.IsVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+					<Button x:Name="CopyVersionInfo" Content="{helpers:ResourceString Name=Copy}">
+						<Button.Flyout>
+							<MenuFlyout>
+								<MenuFlyoutItem Command="{x:Bind ViewModel.CopyAppVersionCommand}" Text="{helpers:ResourceString Name=AppVersion}" />
+								<MenuFlyoutItem Command="{x:Bind ViewModel.CopyWindowsVersionCommand}" Text="{helpers:ResourceString Name=WindowsVersion}" />
+								<MenuFlyoutItem Command="{x:Bind ViewModel.CopyUserIDCommand}" Text="{helpers:ResourceString Name=UserID}" />
+							</MenuFlyout>
+						</Button.Flyout>
+					</Button>
+				</StackPanel>
 			</wctcontrols:SettingsCard>
 
 			<!--  GitHub Sponsor  -->

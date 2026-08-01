@@ -360,14 +360,15 @@
 								The dot goes on the icon rather than the SidebarItem's Decorator slot: the Compact
 								visual state collapses that slot to zero width, so a decorator badge would be invisible
 								in exactly the narrow-sidebar case it matters for.
+
+								The grid must stay 16x16. SidebarStyles.xaml gives IconPresenter a fixed 16x16, so
+								anything larger is clipped rather than laid out.
 							-->
-							<Grid Width="20" Height="20">
+							<Grid Width="16" Height="16">
 								<AnimatedIcon
 									x:Name="SettingAnimatedIcon"
 									Width="16"
 									Height="16"
-									HorizontalAlignment="Center"
-									VerticalAlignment="Center"
 									AnimatedIcon.State="Normal"
 									Foreground="{ThemeResource TextFillColorSecondaryBrush}">
 									<AnimatedIcon.Source>
@@ -379,8 +380,8 @@
 								</AnimatedIcon>
 								<InfoBadge
 									x:Name="UpdateReadyBadge"
-									Width="8"
-									Height="8"
+									Width="6"
+									Height="6"
 									HorizontalAlignment="Right"
 									VerticalAlignment="Top"
 									x:Load="{x:Bind UpdateService.IsUpdateAvailable, Mode=OneWay}"

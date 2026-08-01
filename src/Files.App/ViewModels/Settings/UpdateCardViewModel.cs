@@ -9,7 +9,7 @@ using ByteSize = ByteSizeLib.ByteSize;
 namespace Files.App.ViewModels.Settings
 {
 	/// <summary>
-	/// Represents the update card at the top of <see cref="Views.Settings.AboutPage"/>.
+	/// Represents the update half of the App Info card on <see cref="Views.Settings.AboutPage"/>.
 	/// </summary>
 	/// <remarks>
 	/// Lives beside <see cref="AboutViewModel"/> rather than inside it so that the whole update surface is a
@@ -24,11 +24,13 @@ namespace Files.App.ViewModels.Settings
 		// Dependency injections
 
 		/// <summary>
-		/// Null in Store and dev builds, where nothing can be staged and the card must not appear at all.
+		/// Null in Store and dev builds, where nothing can be staged and the card must say nothing about updates.
 		/// </summary>
 		private IUpdateStatusService? UpdateStatusService { get; } = Ioc.Default.GetService<IUpdateStatusService>();
 
 		private IDateTimeFormatter DateTimeFormatter { get; } = Ioc.Default.GetRequiredService<IDateTimeFormatter>();
+
+		private readonly string _installedVersionLabel;
 
 
 		// Properties
@@ -43,54 +45,53 @@ namespace Files.App.ViewModels.Settings
 			=> VxFilesEnvironment.DisplayName;
 
 		/// <summary>
-		/// Hidden outright where there is no updater, rather than shown saying nothing useful.
+		/// Whether there is an updater to report on at all. Where there is not, the App Info card keeps its
+		/// inherited shape and simply carries no update button.
 		/// </summary>
 		public bool IsVisible
 			=> UpdateStatusService is not null && State is not UpdateStatus.Unsupported;
 
 		/// <summary>
-		/// Collapsed day to day, open when there is finally something to decide about.
+		/// The App Info card's description: the version that is running, then what the updater has to say about
+		/// it. One line, because the installed version and the one waiting to replace it are one subject.
 		/// </summary>
-		public bool IsExpanded
-			=> State is UpdateStatus.Ready;
+		public string Summary
+			=> IsVisible
+				? $"{_installedVersionLabel}  ·  {StatusLabel}"
+				: _installedVersionLabel;
 
-		public string Title
+		private string StatusLabel
 			=> State switch
 			{
 				UpdateStatus.Checking => Strings.UpdateChecking.GetLocalizedResource(),
-				UpdateStatus.Downloading downloading => string.Format(Strings.UpdateDownloading.GetLocalizedResource(), AppName, downloading.Version),
+
+				UpdateStatus.Downloading downloading => string.Join(
+					" — ",
+					string.Format(Strings.UpdateDownloading.GetLocalizedResource(), AppName, downloading.Version),
+					string.Format(
+						Strings.UpdateDownloadProgress.GetLocalizedResource(),
+						downloading.Percent,
+						ByteSize.FromBytes(downloading.Bytes).ToSizeString())),
+
 				UpdateStatus.Ready ready => string.Format(Strings.UpdateReady.GetLocalizedResource(), AppName, ready.Version),
-				UpdateStatus.Failed { Reason: UpdateFailure.Offline } => Strings.UpdateFailedOffline.GetLocalizedResource(),
-				UpdateStatus.Failed { Reason: UpdateFailure.RateLimited } => Strings.UpdateFailedRateLimited.GetLocalizedResource(),
-				UpdateStatus.Failed => Strings.UpdateFailedUnknown.GetLocalizedResource(),
-				_ => string.Format(Strings.UpdateUpToDate.GetLocalizedResource(), AppName),
+
+				// A failure reports both what went wrong and how stale the last real answer is, because either
+				// on its own reads as a passing glitch.
+				UpdateStatus.Failed { Reason: UpdateFailure.Offline } => $"{Strings.UpdateFailedOffline.GetLocalizedResource()} — {LastCheckedLabel}",
+				UpdateStatus.Failed { Reason: UpdateFailure.RateLimited } => $"{Strings.UpdateFailedRateLimited.GetLocalizedResource()} — {LastCheckedLabel}",
+				UpdateStatus.Failed => $"{Strings.UpdateFailedUnknown.GetLocalizedResource()} — {LastCheckedLabel}",
+
+				_ => LastCheckedLabel,
 			};
 
-		public string Description
-			=> State is UpdateStatus.Downloading downloading
-				? string.Format(
-					Strings.UpdateDownloadProgress.GetLocalizedResource(),
-					downloading.Percent,
-					ByteSize.FromBytes(downloading.Bytes).ToSizeString())
-				: LastCheckedLabel;
-
 		/// <summary>
-		/// The line that is easy to dismiss as decoration: an updater that has been failing for a week says so
+		/// The part that is easy to dismiss as decoration: an updater that has been failing for a week says so
 		/// here, and this fork carries no telemetry that would say it anywhere else.
 		/// </summary>
 		private string LastCheckedLabel
 			=> UpdateStatusService?.LastSuccessfulCheck is { } lastChecked
 				? string.Format(Strings.UpdateLastChecked.GetLocalizedResource(), DateTimeFormatter.ToLongLabel(lastChecked))
 				: Strings.UpdateNeverChecked.GetLocalizedResource();
-
-		public string Glyph
-			=> State switch
-			{
-				UpdateStatus.Checking or UpdateStatus.Downloading => "",   // Sync
-				UpdateStatus.Ready => "",   // Download
-				UpdateStatus.Failed => "",  // Warning
-				_ => "",                    // Checkmark
-			};
 
 		/// <summary>
 		/// Shows a progress ring beside the button, and disables it, while a check or a download is running.
@@ -119,8 +120,8 @@ namespace Files.App.ViewModels.Settings
 				: null;
 
 		/// <summary>
-		/// Notes for the release that is waiting, not the one that is running. The App Info card below owns the
-		/// installed version, and the two must not be conflated.
+		/// Notes for the release that is waiting, not the one that is running. The version in
+		/// <see cref="Summary"/> is the installed one, and the two must not be conflated.
 		/// </summary>
 		public string? Notes
 			=> (State as UpdateStatus.Ready)?.NotesMarkdown;
@@ -139,8 +140,13 @@ namespace Files.App.ViewModels.Settings
 
 		// Constructor
 
-		public UpdateCardViewModel()
+		/// <param name="installedVersionLabel">
+		/// How the About page names the running version. Passed in rather than rebuilt here so there is one
+		/// place that decides what a version looks like.
+		/// </param>
+		public UpdateCardViewModel(string installedVersionLabel)
 		{
+			_installedVersionLabel = installedVersionLabel;
 			ActionCommand = new AsyncRelayCommand(RunActionAsync);
 
 			if (UpdateStatusService is not null)
@@ -165,10 +171,7 @@ namespace Files.App.ViewModels.Settings
 			// The whole card derives from one status, so it is redrawn as a unit rather than tracking which of
 			// these the change happened to touch.
 			OnPropertyChanged(nameof(IsVisible));
-			OnPropertyChanged(nameof(IsExpanded));
-			OnPropertyChanged(nameof(Title));
-			OnPropertyChanged(nameof(Description));
-			OnPropertyChanged(nameof(Glyph));
+			OnPropertyChanged(nameof(Summary));
 			OnPropertyChanged(nameof(IsBusy));
 			OnPropertyChanged(nameof(ActionText));
 			OnPropertyChanged(nameof(IsActionEnabled));

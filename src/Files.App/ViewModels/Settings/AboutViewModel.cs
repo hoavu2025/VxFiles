@@ -34,9 +34,9 @@ namespace Files.App.ViewModels.Settings
 		public ObservableCollection<OpenSourceLibraryItem> OpenSourceLibraries { get; }
 
 		/// <summary>
-		/// The update card above the App Info card. Hides itself where there is no updater to report on.
+		/// The update half of the App Info card. Says nothing where there is no updater to report on.
 		/// </summary>
-		public UpdateCardViewModel UpdateCard { get; } = new();
+		public UpdateCardViewModel UpdateCard { get; }
 
 		// Commands
 
@@ -84,6 +84,8 @@ namespace Files.App.ViewModels.Settings
 				new ("https://github.com/dongle-the-gadget/GuidRVAGen", "Dongle.GuidRVAGen"),
 				new ("https://github.com/leeqwind/PESignAnalyzer", "PESignAnalyzer"),
 			];
+
+			UpdateCard = new UpdateCardViewModel(Version);
 
 			CopyAppVersionCommand = new RelayCommand(CopyAppVersion);
 			CopyWindowsVersionCommand = new RelayCommand(CopyWindowsVersion);
