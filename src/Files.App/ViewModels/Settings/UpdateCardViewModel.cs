@@ -114,10 +114,20 @@ namespace Files.App.ViewModels.Settings
 		public bool IsActionEnabled
 			=> !IsBusy;
 
+		/// <summary>
+		/// Accented once there is something to install, plain otherwise.
+		/// </summary>
+		/// <remarks>
+		/// Never null. Binding a control's Style to null is not the same as leaving it unset — it counts as a
+		/// local value and suppresses the implicit default style, so the button would lose its template and
+		/// render bare next to the Copy button beside it.
+		/// </remarks>
 		public Style? ActionStyle
-			=> State is UpdateStatus.Ready
-				? Application.Current.Resources["AccentButtonStyle"] as Style
-				: null;
+			=> Application.Current.Resources.TryGetValue(
+				State is UpdateStatus.Ready ? "AccentButtonStyle" : "DefaultButtonStyle",
+				out var style)
+					? style as Style
+					: null;
 
 		/// <summary>
 		/// Notes for the release that is waiting, not the one that is running. The version in
