@@ -186,14 +186,7 @@ public sealed class AutomationPackageCatalogTests
 		var outsidePath = System.IO.Path.Combine(packages.Path, "outside.py");
 		File.WriteAllText(outsidePath, string.Empty);
 
-		try
-		{
-			File.CreateSymbolicLink(System.IO.Path.Combine(packagePath, "linked.py"), outsidePath);
-		}
-		catch (Exception exception) when (exception is UnauthorizedAccessException or IOException)
-		{
-			Assert.Inconclusive($"Symbolic links are unavailable in this test environment: {exception.Message}");
-		}
+		TestLinks.Create(System.IO.Path.Combine(packagePath, "linked.py"), outsidePath);
 
 		var package = Discover(packages).Packages.Single();
 

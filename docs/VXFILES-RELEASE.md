@@ -33,7 +33,12 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
 
 It sets `VXFILES_AUTOMATION_REQUIRE_RUNTIME=1`, so a missing runtime fails the run instead of skipping every real-process test and still reporting success. VxFiles itself is never launched.
 
-`Discover_disables_package_containing_reparse_point` skips on an account without the symbolic-link privilege. That is the only expected skip; any other skip means the runtime was not acquired.
+Tests that create a symbolic link skip on an account without the privilege to create one, which needs Developer Mode or elevation. Those are the only expected skips; any other skip means the runtime was not acquired. They all report `Symbolic links are unavailable in this test environment`, and they are:
+
+- `Discover_disables_package_containing_reparse_point`, which proves a package tree still refuses one.
+- `AutomationDependencyResolverTests`' four link cases, which prove an external tool reached through a winget or scoop shim resolves to its target.
+
+The second group covers the only supported route to a shimmed FFmpeg, so a release whose run skipped them has not tested it. Enable Developer Mode on the release machine, or run the suite elevated.
 
 ## Publish with GitHub CLI
 

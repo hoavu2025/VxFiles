@@ -149,12 +149,16 @@ public sealed record AutomationPackageState(
 public sealed record AutomationActionSettings(
 	ImmutableDictionary<string, AutomationSettingValue> Values);
 
+/// <remarks>
+/// Identity rests on <paramref name="Fingerprint"/> alone: it is the only one of these the trust fingerprint
+/// mixes in. Do not add a signature status. A correct check reports <c>unsigned</c> for the FFmpeg builds people
+/// actually install, so the field can only lie or say nothing, and saying nothing is smaller.
+/// </remarks>
 public sealed record AutomationExternalToolIdentity(
 	string Id,
 	string ExecutablePath,
 	string Fingerprint,
-	string? FileVersion,
-	string SignatureStatus);
+	string? FileVersion);
 
 /// <summary>
 /// Package-wide consent shown before the first run and whenever package, runner, or tool identity changes.

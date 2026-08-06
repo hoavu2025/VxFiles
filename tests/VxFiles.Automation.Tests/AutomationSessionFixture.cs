@@ -176,6 +176,31 @@ internal sealed class AutomationFixture : IDisposable
 	}
 }
 
+internal static class TestLinks
+{
+	/// <summary>
+	/// Creates a symbolic link, or reports the test inconclusive where the privilege to create one is absent.
+	/// </summary>
+	/// <remarks>
+	/// Creating one needs Developer Mode or elevation, which a plain developer account has neither of. Every
+	/// test that reaches for a link is therefore skippable, and <c>docs/VXFILES-RELEASE.md</c> names them so a
+	/// release gate can tell an expected skip from a runtime that was never acquired.
+	/// </remarks>
+	public static string Create(string path, string target)
+	{
+		try
+		{
+			File.CreateSymbolicLink(path, target);
+		}
+		catch (Exception exception) when (exception is UnauthorizedAccessException or IOException)
+		{
+			Assert.Inconclusive($"Symbolic links are unavailable in this test environment: {exception.Message}");
+		}
+
+		return path;
+	}
+}
+
 /// <summary>
 /// Builds <c>vxpackage.json</c> text for multi-action packages.
 /// </summary>

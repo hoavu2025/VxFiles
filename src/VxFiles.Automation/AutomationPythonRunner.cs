@@ -413,7 +413,6 @@ internal static class AutomationPythonRunner
 					writer.WriteString("fingerprint", tool.Fingerprint);
 					if (tool.FileVersion is not null)
 						writer.WriteString("fileVersion", tool.FileVersion);
-					writer.WriteString("signatureStatus", tool.SignatureStatus);
 					writer.WriteEndObject();
 				}
 

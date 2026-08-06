@@ -30,6 +30,16 @@ $msbuild = & $vswhere -latest -products * -requires Microsoft.Component.MSBuild 
 	-v:quiet -clp:ErrorsOnly
 ```
 
+## Run the automation tests through the built executable
+
+`dotnet test tests/VxFiles.Automation.Tests` reports `Zero tests ran` and exit code 5. The project is
+`OutputType=Exe` on Microsoft.Testing.Platform, so run the executable it produces instead:
+
+```powershell
+dotnet build tests/VxFiles.Automation.Tests -c Debug -p:Platform=x64
+& .\tests\VxFiles.Automation.Tests\bin\x64\Debug\net10.0-windows10.0.26100.0\VxFiles.Automation.Tests.exe
+```
+
 ## Reading a XAML failure that has no message
 
 If MSBuild itself reports `WMC9999`, the real diagnostics are still on disk. The XAML compiler runs
